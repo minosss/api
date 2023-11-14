@@ -32,9 +32,6 @@
     "dev": "tsup --watch",
     "test:types": "tsc --noEmit"
   },
-  "engines": {
-    "node": ">=16"
-  },
   "publishConfig": {
     "access": "public"
   }
