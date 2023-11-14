@@ -4,6 +4,7 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API routes. No serv
 
 [![NPM version](https://img.shields.io/npm/v/@yme/api)](https://www.npmjs.com/package/@yme/api)
 [![NPM Downloads](https://img.shields.io/npm/dm/@yme/api)](https://www.npmjs.com/package/@yme/api)
+[![Bundle Size](https://deno.bundlejs.com/?q=@yme/api&badge=detailed)](https://bundlejs.com/?q=@yme/api&badge=detailed)
 
 <img src="./api.gif" width=480 />
 
