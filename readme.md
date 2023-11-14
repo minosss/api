@@ -20,6 +20,7 @@ So I create this package to solve these problems. (I hope so)
 🚧 TODOs
 
 - with react-query
+- generate from api docs e.g. swagger
 
 ## Install
 
@@ -30,19 +31,67 @@ pnpm add @yme/api
 ## Quick Start
 
 ```ts
+import { createApi, createRouter } from '@yme/api';
+import axios from 'axios';
+import { z } from 'zod';
+
+const request = axios.create({}).request;
+
 const router = createRouter();
+
+const createUserSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+  age: z.number().optional(),
+});
+
+type CreateUserInput = z.infer<typeof createUserSchema>;
+
+interface UserType {
+  id: number;
+  username: string;
+}
+
 const routes = {
   users: {
-    create: router.post('/users').validator(schema).selector(user => user.id),
+    create: router
+      .post('/users') // api.user.create({...}) => POST /users
+      .validator(createUserSchema)
+      .T<UserType>().selector(user => user.id), // (input: CreateUserInput): number
+      // same as .selector((user: UserType) => user.id),
+    delete: router
+      .delete('/users/:id') // api.user.delete(123) replace path with input => DELETE /users/123
+      .validator(z.number())
+      .T<void>(), // (input: number): void
+    update: router
+      .put('/users/:id') // api.user.update(input) will replace with input[id] => PUT /users/{id}
+      .validator(z.object({username: z.string().optional(), age: z.number().optional(), id: z.number()}))
+      .T<UserType>(), // (input: {username?: string; age?: number; id: number}): UserType
+    list: router
+      // .get('/users'), api.user.list({page: 1}) => GET /users?page=1
+      .T<{page: number}, {list: UserType[]}>()
+      .validator(({page}) => page > 0)
+      .selector(({list}) => list), // (input: {page: number}): UserType[]
   }
 }
+
 const api = createApi({
-  http: fetch,
+  http: request,
   routes,
 });
 
-api.users.create({name: 'yoyo'});
-// should output user id
+declare module '@yme/api' {
+  interface Register {
+    api: typeof api;
+  }
+}
+
+// use api
+const userId = await api.users.create({username: 'yoyo', password: 'yoyo123'});
+console.log(`user id: ${userId}`);
+// delete user
+await api.users.delete(userId);
+// done.
 ```
 
 How to define a route?
