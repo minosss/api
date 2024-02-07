@@ -11,6 +11,15 @@ export interface Register {
 
 // export interface RoutesRegister {}
 
+export type ExtractApiPaths<T> =
+  T extends object
+    ? {
+        [K in keyof T]: `${T[K] extends (...args: any[]) => any ? K & string : never}` | `${K & string}.${ExtractApiPaths<T[K]>}`;
+      }[keyof T]
+    : never;
+
+export type CurrentApiPaths = ExtractApiPaths<Register extends { api: infer A } ? A : never>;
+
 export type AnyHttpClient = (config: any) => Promise<any>;
 export type RequestConfig = Register extends { api: { http: AnyHttpClient } }
   ? Parameters<Register['api']['http']>[0]
