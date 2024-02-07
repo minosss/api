@@ -70,7 +70,7 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
       throw ApiError.from('Can not found route def.', ApiError.ERR_BAD_ROUTE, route);
     }
 
-    const { path, method, schema, transform } = def as AnyRouteDef;
+    const { path, method, schema, transform, pathParams } = def as AnyRouteDef;
 
     // input
 
@@ -79,7 +79,6 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
     // url
 
     let url = path;
-    const pathParams = url.match(/:[\w$-]+/g);
     if (pathParams) {
       for (const pathParam of pathParams) {
         const key = pathParam.slice(1);

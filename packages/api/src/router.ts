@@ -8,6 +8,7 @@ export interface RouteDef<I, O, M extends string, P extends string, S extends An
 
   method: M;
   path: P;
+  pathParams?: string[];
   schema: S;
   transform: T;
 }
@@ -88,6 +89,7 @@ export function createRouter() {
     router[method] = (path: string) => createRouteChain({
       method,
       path,
+      pathParams: path.match(/:\w+/g),
       schema: anyParser,
       transform: anyParser,
     });

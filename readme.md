@@ -6,7 +6,7 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API routes. No serv
 [![NPM Downloads](https://img.shields.io/npm/dm/@yme/api)](https://www.npmjs.com/package/@yme/api)
 [![Bundle Size](https://deno.bundlejs.com/?q=@yme/api&badge=detailed)](https://bundlejs.com/?q=@yme/api&badge=detailed)
 
-<img src="./api.gif" width=480 />
+<img src="./api.gif" width=800 />
 
 ## Why
 
@@ -89,6 +89,7 @@ declare module '@yme/api' {
 // use api
 const userId = await api.users.create({username: 'yoyo', password: 'yoyo123'});
 console.log(`user id: ${userId}`);
+
 // delete user
 await api.users.delete(userId);
 // done.
@@ -99,17 +100,23 @@ How to define a route?
 ```ts
 // method and path always required
 router.post('/users');
+
 // method, path and validator (input)
 router.post('/users').validator(schema);
+
 // with selector
 router.post('/users').T<UserType>().selector((user) => user.id);
 router.post('/users').selector((user: UserType) => user.id);
+
 // method, path, validator (input) and selector (output)
 router.post('/users').validator(schema).selector((user: UserType) => user.id);
+
 // with types (input, output)
 router.post('/users').T<In, Out>();
+
 // validator and output
 router.post('/users').validator(schema).T<Out>();
+
 // types first
 router.post('/users').T<In, Out>().validator((in) => in).selector(out => out);
 ```
