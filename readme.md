@@ -56,22 +56,25 @@ const routes = {
   users: {
     create: router
       .post('/users') // api.user.create({...}) => POST /users
-      .validator(createUserSchema)
-      .T<UserType>().selector(user => user.id), // (input: CreateUserInput): number
-      // same as .selector((user: UserType) => user.id),
+      .validator(createUserSchema) // (input: CreateUserInput) => any
+      .T<UserType>().selector(user => user.id), // (user: UserType) => number
     delete: router
       .delete('/users/:id') // api.user.delete(123) replace path with input => DELETE /users/123
       .validator(z.number())
-      .T<void>(), // (input: number): void
+      .T<void>(), // (input: number) => void
     update: router
       .put('/users/:id') // api.user.update(input) will replace with input[id] => PUT /users/{id}
-      .validator(z.object({username: z.string().optional(), age: z.number().optional(), id: z.number()}))
-      .T<UserType>(), // (input: {username?: string; age?: number; id: number}): UserType
+      .validator(z.object({
+        username: z.string().optional(),
+        age: z.number().optional(),
+        id: z.number(),
+      }))
+      .T<UserType>(), // (input: {username?: string; age?: number; id: number}) => UserType
     list: router
-      // .get('/users'), api.user.list({page: 1}) => GET /users?page=1
+      .get('/users') // api.user.list({page: 1}) => GET /users?page=1
       .T<{page: number}, {list: UserType[]}>()
-      .validator(({page}) => page > 0)
-      .selector(({list}) => list), // (input: {page: number}): UserType[]
+      .validator(({page}) => page > 0 ? {page} : {page: 1}) // (input: {page: number}) => {page: number}
+      .selector(({list}) => list), // (listResult: {list: UserType[]}) => UserType[]
   }
 }
 
