@@ -1,5 +1,5 @@
 import type { AnyRouteDef, AnyRoute } from './router';
-import type { AnyParser, IsUnknown } from './types';
+import type { AnyParser, IsUnknown, ErrorMessage } from './types';
 import { getParser, isPlainObject } from './types';
 import { getRouteDef } from './router';
 import { createProxy } from './proxy';
@@ -11,6 +11,8 @@ export interface Register {
 
 // export interface RoutesRegister {}
 
+type UnRegister = ErrorMessage<'Waiting register api client'>;
+
 export type ExtractApiPaths<T> =
   T extends object
     ? {
@@ -18,15 +20,25 @@ export type ExtractApiPaths<T> =
       }[keyof T]
     : never;
 
-export type CurrentApiPaths = ExtractApiPaths<Register extends { api: infer A } ? A : never>;
+export type CurrentApiPaths = ExtractApiPaths<Register extends { api: infer A } ? A : Record<UnRegister, never>>;
 
-export type AnyHttpClient = (config: any) => Promise<any>;
-export type RequestConfig = Register extends { api: { http: AnyHttpClient } }
-  ? Parameters<Register['api']['http']>[0]
-  : never;
-export type HttpClient = Register extends { api: ApiOptions }
-  ? Register['api']['http']
-  : AnyHttpClient;
+export type BaseRequestConfig = {
+  method: string;
+  url: string;
+  params: any;
+  data?: undefined;
+} | {
+  method: string;
+  url: string;
+  params?: undefined;
+  data: any;
+};
+
+export type AnyHttpFn = (...args: any[]) => Promise<any>;
+
+export type RequestConfig = Register extends { api: ApiClient<infer A> }
+  ? Omit<Parameters<A['http']>[0], keyof BaseRequestConfig>
+  : UnRegister;
 
 export interface Routes {
   readonly [key: string]: AnyRoute | Routes;
@@ -43,7 +55,7 @@ type ExtractRoutes<T> = T extends AnyRoute
     : never;
 
 export interface ApiOptions {
-  http: AnyHttpClient;
+  http: AnyHttpFn;
   routes: Routes;
   validator?(schema: AnyParser, input: unknown): unknown;
   guard?(config: any, route: AnyRoute): boolean;

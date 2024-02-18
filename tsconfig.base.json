@@ -19,9 +19,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
-
-    "types": ["bun-types"]
+    "noFallthroughCasesInSwitch": true
   },
   "exclude": ["node_modules"]
 }

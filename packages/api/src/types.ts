@@ -18,6 +18,9 @@ export type AnyParser = Parser<any, any>;
 export type IsParser<T> = T extends AnyParser ? true : false;
 export type InferParser<T> = T extends Parser<infer I, infer O> ? { input: I; output: O } : never;
 
+//
+export type ErrorMessage<T extends string> = T;
+
 export function getParser(value: any): ParserFn<any, any> {
   if (value == null) return (v: unknown) => v;
 

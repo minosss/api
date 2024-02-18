@@ -13,13 +13,12 @@
     "@types/react-dom": "^18.2.15",
     "@yme/eslint-config-react": "^0.3.5",
     "@yme/eslint-config-typescript": "^0.3.5",
-    "bun-types": "^1.0.11",
     "eslint": "^8.53.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.2",
     "rimraf": "^5.0.5",
-    "tsup": "^7.2.0",
-    "turbo": "^1.10.16",
+    "tsup": "^8.0.2",
+    "turbo": "^1.12.4",
     "typescript": "^5.2.2"
   },
   "lint-staged": {
