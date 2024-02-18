@@ -37,10 +37,13 @@ export function useApi<T extends CurrentApiPaths>(path: T): ExtractApiFn<T> | un
 /**
  * return api client
  */
-export function useApi(path?: undefined): CurrentApiClient | undefined;
+export function useApi(path?: undefined): CurrentApiClient;
 export function useApi(path: any) {
   const api = useContext(Context)?.api;
-  if (typeof path === 'string' && api) {
+  // ensure the context is set
+  if (api == null) throw new Error('useApi must be used within a ApiProvider');
+
+  if (typeof path === 'string') {
     const paths = path.split('.');
     let result: any = api;
     for (const k of paths) {
