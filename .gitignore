@@ -130,3 +130,6 @@ dist
 .pnp.*
 
 .turbo
+
+
+.nx/cache

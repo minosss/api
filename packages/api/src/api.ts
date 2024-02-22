@@ -1,7 +1,6 @@
-import type { AnyRouteDef, AnyRoute } from './router';
-import type { AnyParser, IsUnknown, ErrorMessage } from './types';
-import { getParser, isPlainObject } from './types';
-import { getRouteDef } from './router';
+import type { AnyRoute, AnyRouteDef } from './router';
+import type { ErrorMessage, AnyFn, IsUnknown } from './types';
+import { getParser } from './parser';
 import { createProxy } from './proxy';
 import { ApiError } from './error';
 
@@ -11,30 +10,35 @@ export interface Register {
 
 // export interface RoutesRegister {}
 
+export const API_HTTP_METHOD = 'http';
+
 type UnRegister = ErrorMessage<'Waiting register api client'>;
 
-export type ExtractApiPaths<T> =
-  T extends object
-    ? {
-        [K in keyof T]: `${T[K] extends (...args: any[]) => any ? K & string : never}` | `${K & string}.${ExtractApiPaths<T[K]>}`;
-      }[keyof T]
-    : never;
+export type ExtractApiPaths<T> = T extends object
+  ? {
+      [K in keyof T]:
+        | `${T[K] extends (...args: any[]) => any ? K & string : never}`
+        | `${K & string}.${ExtractApiPaths<T[K]>}`;
+    }[keyof T]
+  : never;
 
-export type CurrentApiPaths = ExtractApiPaths<Register extends { api: infer A } ? A : Record<UnRegister, never>>;
+export type CurrentApiPaths = ExtractApiPaths<
+  Register extends { api: infer A } ? A : Record<UnRegister, never>
+>;
 
-export type BaseRequestConfig = {
-  method: string;
-  url: string;
-  params: any;
-  data?: undefined;
-} | {
-  method: string;
-  url: string;
-  params?: undefined;
-  data: any;
-};
-
-export type AnyHttpFn = (...args: any[]) => Promise<any>;
+export type BaseRequestConfig =
+  | {
+      method: string;
+      url: string;
+      params: any;
+      data?: undefined;
+    }
+  | {
+      method: string;
+      url: string;
+      params?: undefined;
+      data: any;
+    };
 
 export type RequestConfig = Register extends { api: ApiClient<infer A> }
   ? Omit<Parameters<A['http']>[0], keyof BaseRequestConfig>
@@ -44,9 +48,10 @@ export interface Routes {
   readonly [key: string]: AnyRoute | Routes;
 }
 
-type RouteToRequest<R extends AnyRoute> = IsUnknown<R['_def']['_input']> extends true
-  ? (input?: R['_def']['_input'], config?: RequestConfig) => Promise<R['_def']['_output']>
-  : (input: R['_def']['_input'], config?: RequestConfig) => Promise<R['_def']['_output']>;
+type RouteToRequest<R extends AnyRoute> =
+  IsUnknown<R['def']['_input']> extends true
+    ? (input?: any, config?: RequestConfig) => Promise<R['def']['_output']>
+    : (input: R['def']['_input'], config?: RequestConfig) => Promise<R['def']['_output']>;
 
 type ExtractRoutes<T> = T extends AnyRoute
   ? RouteToRequest<T>
@@ -55,59 +60,92 @@ type ExtractRoutes<T> = T extends AnyRoute
     : never;
 
 export interface ApiOptions {
-  http: AnyHttpFn;
+  /** request function */
+  http: AnyFn;
+
+  /** routes */
   routes: Routes;
-  validator?(schema: AnyParser, input: unknown): unknown;
-  guard?(config: any, route: AnyRoute): boolean;
+
+  /** remove input if match path param, true by defaults */
+  removePathParams?: boolean;
+
+  guard?(config: any, route: AnyRoute): boolean | Promise<boolean>;
   onSuccess?(output: any): void;
   onError?(error: any): void;
   onFinished?(config: any): void;
 }
 
-export type ApiClient<A extends ApiOptions> = ExtractRoutes<A['routes']> & {
-  http: A['http'];
+export type ApiClient<A extends ApiOptions> = ExtractRoutes<A['routes']> &
+  Record<typeof API_HTTP_METHOD, A['http']>;
+
+const cached = <T extends (...args: any[]) => any>(getValue: T) => {
+  const cache = new Map<any, any>();
+  return ((key: any) => {
+    const _key = key.toString();
+    if (cache.has(_key)) {
+      return cache.get(_key);
+    }
+    const value = getValue(key);
+    cache.set(_key, value);
+    return value;
+  }) as T;
 };
 
 export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
-  const { routes, http, validator, guard, onError, onFinished, onSuccess } = options;
+  const {
+    routes,
+    http,
+    guard,
+    onError,
+    onFinished,
+    onSuccess,
+    removePathParams = true,
+  } = options;
+
+  const getCachedParams = cached((key: string) => key.match(/:\w+/g));
+  const getCachedRoute = cached((keys: string[]) => {
+    let route: any;
+    for (const key of keys) {
+      route = (route || routes)[key];
+    }
+    return route;
+  });
 
   return createProxy(async (opts) => {
     // return http client
-    if (opts.path[0] === 'http') {
+    if (opts.path[0] === API_HTTP_METHOD) {
       return http.call(http, opts.args);
     }
 
     const [input, config] = opts.args;
-    const parts = [...opts.path];
+    const route = getCachedRoute(opts.path);
 
-    // route
-
-    let route: any;
-    for (const part of parts) {
-      route = (route || routes)[part];
-    }
-    const def = getRouteDef(route);
+    const def = route?.def;
     if (def == null) {
       throw ApiError.from('Can not found route def.', ApiError.ERR_BAD_ROUTE, route);
     }
 
-    const { path, method, schema, transform, pathParams } = def as AnyRouteDef;
+    const { path, method, schema, transform } = def as AnyRouteDef;
+
+    // path params
+    const pathParams = getCachedParams(path);
 
     // input
 
-    let nextInput = validator ? validator(schema, input) : getParser(schema)(input);
+    let nextInput = getParser(schema)(input);
 
     // url
 
     let url = path;
+
     if (pathParams) {
       for (const pathParam of pathParams) {
         const key = pathParam.slice(1);
-        if (isPlainObject(nextInput)) {
+        if (nextInput !== null && typeof nextInput === 'object' && !Array.isArray(nextInput)) {
           const value = nextInput[key];
           if (typeof value === 'number' || typeof value === 'string') {
             url = url.replace(pathParam, `${value}`);
-            delete nextInput[key];
+            if (removePathParams) delete nextInput[key];
           } else {
             throw ApiError.from(`Bad params ${key} data.`, ApiError.ERR_BAD_INPUT, route);
           }
@@ -129,7 +167,7 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
       url,
     };
 
-    if (['post', 'put', 'patch'].includes(method.toLowerCase())) {
+    if (['post', 'put', 'patch'].includes(method)) {
       requestConfig.data = nextInput;
     } else {
       requestConfig.params = nextInput;
@@ -137,16 +175,27 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
 
     // guard
     if (guard) {
-      const isPass = guard(requestConfig, route);
+      let isPass = guard(requestConfig, route);
+      if (typeof isPass === 'object' && typeof isPass.then === 'function') {
+        // wait for promise
+        isPass = await isPass;
+      }
       if (isPass !== true) {
-        throw ApiError.from(`You don't have access to ${requestConfig.method} ${requestConfig.url}`, ApiError.ERR_ACCESS_DENIED, route);
+        throw ApiError.from(
+          `You don't have access to ${requestConfig.method} ${requestConfig.url}`,
+          ApiError.ERR_ACCESS_DENIED,
+          route,
+        );
       }
     }
 
     // http request
 
     try {
-      const response = await http(requestConfig);
+      let response = http(requestConfig);
+      if (typeof response === 'object' && typeof response.then === 'function') {
+        response = await response;
+      }
       const nextResponse = getParser(transform)(response);
       onSuccess?.(nextResponse);
       return nextResponse;
