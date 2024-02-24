@@ -12,8 +12,10 @@ export type AnyParser = Parser<any, any>;
 export type InferParser<T> =
   T extends Parser<infer I, infer O> ? { _input: I; _output: O } : never;
 
+export const anyParser = (d: any) => d;
+
 export function getParser(value: any): ParserFn<any, any> {
-  if (value == null) return (v: unknown) => v;
+  if (value == null) return anyParser;
 
   if (typeof value === 'function') return value.bind(value);
 
@@ -21,5 +23,3 @@ export function getParser(value: any): ParserFn<any, any> {
 
   throw new Error(`Invalid parser: ${value}`);
 }
-
-export const anyParser = (d: unknown) => d;

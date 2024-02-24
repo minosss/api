@@ -1,25 +1,29 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    // Enable latest features
+    "lib": ["ESNext"],
     "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["ESNext", "DOM"],
     "module": "ESNext",
-    "skipLibCheck": true,
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
     "allowJs": true,
 
+    // Bundler mode
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
-    "jsx": "react-jsx",
 
+    // Best practices
     "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Some stricter flags
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "exclude": ["node_modules"]
 }

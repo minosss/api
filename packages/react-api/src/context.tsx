@@ -1,7 +1,9 @@
 import type { CurrentApiPaths, Register, ErrorMessage } from '@yme/api';
 import { createContext, useContext } from 'react';
 
-type CurrentApiClient = Register extends { api: infer T } ? T : ErrorMessage<'Waiting register api client'>;
+type CurrentApiClient = Register extends { api: infer T }
+  ? T
+  : ErrorMessage<'Waiting register api client'>;
 
 export interface ApiContext {
   api: CurrentApiClient;
@@ -15,18 +17,19 @@ export interface ApiProviderProps {
 }
 
 export const ApiProvider: React.FC<ApiProviderProps> = (props) => {
-  return (
-    <Context.Provider value={{ api: props.api }}>
-      {props.children}
-    </Context.Provider>
-  );
+  return <Context.Provider value={{ api: props.api }}>{props.children}</Context.Provider>;
 };
 
 type InvalidApiKey = ErrorMessage<'Invalid api key'>;
 
-type ExtractApiFn<Key extends string, Api = CurrentApiClient> = Key extends `${infer Curr}.${infer Rest}`
+type ExtractApiFn<
+  Key extends string,
+  Api = CurrentApiClient,
+> = Key extends `${infer Curr}.${infer Rest}`
   ? ExtractApiFn<Rest, Curr extends keyof Api ? Api[Curr] : InvalidApiKey>
-  : Key extends keyof Api ? Api[Key] : InvalidApiKey;
+  : Key extends keyof Api
+    ? Api[Key]
+    : InvalidApiKey;
 
 /**
  * api function by route

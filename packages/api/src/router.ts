@@ -1,5 +1,6 @@
 import type { DefaultValue, Overrite } from './types';
-import { AnyParser, anyParser, type InferParser, type Parser } from './parser';
+import type { AnyParser, InferParser, Parser } from './parser';
+import { anyParser } from './parser';
 
 export interface RouteDef<I, O, M, P, S, T> {
   /** what type you should submit to serve */

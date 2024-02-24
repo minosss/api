@@ -57,26 +57,29 @@ const routes = {
     create: router
       .post('/users') // api.user.create({...}) => POST /users
       .validator(createUserSchema) // (input: CreateUserInput) => any
-      .T<UserType>().selector(user => user.id), // (user: UserType) => number
+      .T<UserType>()
+      .selector((user) => user.id), // (user: UserType) => number
     delete: router
       .delete('/users/:id') // api.user.delete(123) replace path with input => DELETE /users/123
       .validator(z.number())
       .T<void>(), // (input: number) => void
     update: router
       .put('/users/:id') // api.user.update(input) will replace with input[id] => PUT /users/{id}
-      .validator(z.object({
-        username: z.string().optional(),
-        age: z.number().optional(),
-        id: z.number(),
-      }))
+      .validator(
+        z.object({
+          username: z.string().optional(),
+          age: z.number().optional(),
+          id: z.number(),
+        }),
+      )
       .T<UserType>(), // (input: {username?: string; age?: number; id: number}) => UserType
     list: router
       .get('/users') // api.user.list({page: 1}) => GET /users?page=1
-      .T<{page: number}, {list: UserType[]}>()
-      .validator(({page}) => page > 0 ? {page} : {page: 1}) // (input: {page: number}) => {page: number}
-      .selector(({list}) => list), // (listResult: {list: UserType[]}) => UserType[]
-  }
-}
+      .T<{ page: number }, { list: UserType[] }>()
+      .validator(({ page }) => (page > 0 ? { page } : { page: 1 })) // (input: {page: number}) => {page: number}
+      .selector(({ list }) => list), // (listResult: {list: UserType[]}) => UserType[]
+  },
+};
 
 const api = createApi({
   http: request,
@@ -90,7 +93,7 @@ declare module '@yme/api' {
 }
 
 // use api
-const userId = await api.users.create({username: 'yoyo', password: 'yoyo123'});
+const userId = await api.users.create({ username: 'yoyo', password: 'yoyo123' });
 console.log(`user id: ${userId}`);
 
 // delete user

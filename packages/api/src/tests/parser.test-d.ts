@@ -1,6 +1,7 @@
 import { describe, test } from 'vitest';
 import { expectTypeOf } from 'vitest';
-import { AnyParser, getParser } from '../parser';
+import { getParser } from '../parser';
+import type { AnyParser } from '../parser';
 
 describe('typeof getParser', () => {
   test('should returns fallback AnyParser', () => {
