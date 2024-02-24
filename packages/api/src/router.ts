@@ -160,8 +160,8 @@ export type PathParams<T extends string> = T extends `${string}:${string}`
   ?
       | {
           [K in ExtractParams<T>[number]]: ParamValue;
-          // Supports without key if only one parameter
         }
+      // Supports without key if only one parameter
       | (ExtractParams<T>['length'] extends 1 ? ParamValue : never)
   : unknown;
 
