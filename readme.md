@@ -63,6 +63,9 @@ const routes = {
       .delete('/users/:id') // api.user.delete(123) replace path with input => DELETE /users/123
       .validator(z.number())
       .T<void>(), // (input: number) => void
+    one: router
+      .get('/users/:id') // api.user.one(123)
+      .T<UserType>(), // (input: number | {id: number}) => UserType (input type is number | string or {id: number | string} from path params)
     update: router
       .put('/users/:id') // api.user.update(input) will replace with input[id] => PUT /users/{id}
       .validator(
