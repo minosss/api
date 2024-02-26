@@ -1,7 +1,7 @@
 {
   "name": "@yme/api",
   "description": "define type-safe API routes simply",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "sideEffects": false,
   "author": "mino",
