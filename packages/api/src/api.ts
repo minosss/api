@@ -10,6 +10,8 @@ export interface Register {
 
 // export interface RoutesRegister {}
 
+export const Nothing = Object.freeze(undefined);
+
 export const API_HTTP_METHOD = 'http';
 
 type UnRegister = ErrorMessage<'Waiting register api client'>;
@@ -40,8 +42,8 @@ export type BaseRequestConfig =
       data: any;
     };
 
-export type RequestConfig = Register extends { api: ApiClient<infer A> }
-  ? Omit<Parameters<A['http']>[0], keyof BaseRequestConfig>
+export type RequestConfig = Register extends { api: { http: AnyFn } }
+  ? Omit<Parameters<Register['api']['http']>[0], keyof BaseRequestConfig>
   : UnRegister;
 
 export interface Routes {
@@ -50,7 +52,7 @@ export interface Routes {
 
 type RouteToRequest<R extends AnyRoute> =
   IsUnknown<R['def']['_input']> extends true
-    ? (input?: any, config?: RequestConfig) => Promise<R['def']['_output']>
+    ? (input?: R['def']['_input'], config?: RequestConfig) => Promise<R['def']['_output']>
     : (input: R['def']['_input'], config?: RequestConfig) => Promise<R['def']['_output']>;
 
 type ExtractRoutes<T> = T extends AnyRoute
