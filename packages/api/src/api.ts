@@ -1,4 +1,4 @@
-import type { AnyRoute, AnyRouteDef } from './router';
+import { isRoute, type AnyRoute } from './router';
 import type { ErrorMessage, AnyFn, IsUnknown } from './types';
 import { getParser } from './parser';
 import { createProxy } from './proxy';
@@ -122,12 +122,11 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
     const [input, config] = opts.args;
     const route = getCachedRoute(opts.path);
 
-    const def = route?.def;
-    if (def == null) {
-      throw ApiError.from('Can not found route def.', ApiError.ERR_BAD_ROUTE, route);
+    if (!isRoute(route)) {
+      throw ApiError.from('Can not found route.', ApiError.ERR_BAD_ROUTE, route);
     }
 
-    const { path, method, schema, transform } = def as AnyRouteDef;
+    const { path, method, schema, transform } = route.def;
 
     // path params
     const pathParams = getCachedParams(path);

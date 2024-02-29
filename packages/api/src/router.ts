@@ -2,6 +2,9 @@ import type { DefaultValue, Overrite } from './types';
 import type { AnyParser, InferParser, Parser } from './parser';
 import { anyParser } from './parser';
 
+// private symbol, it is used to check if the value is a route. It is not exported to the user.
+const IsRoute = Symbol('isRoute');
+
 export interface RouteDef<I, O, M, P, S, T> {
   /** what type you should submit to serve */
   _input: I;
@@ -34,6 +37,7 @@ export type AnyRoute = RouteBuilder<AnyRouteDef>;
  * ```
  */
 export class RouteBuilder<Def extends AnyRouteDef> {
+  [IsRoute] = true;
   // private
   #def: Def;
 
@@ -229,3 +233,5 @@ export class RouterBuilder {
 }
 
 export const createRouter = () => new RouterBuilder();
+
+export const isRoute = (value: any): value is AnyRoute => value && value[IsRoute] === true;
