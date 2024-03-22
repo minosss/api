@@ -130,6 +130,29 @@ router.post('/users').validator(schema).T<Out>();
 router.post('/users').T<In, Out>().validator((in) => in).selector(out => out);
 ```
 
+Create a api resource (v1.2.0)
+
+```ts
+const r = createResource('/users');
+
+const user = {
+  // GET /users
+  list: r.get().T<{records: UserType[]; total: number}>(),
+  // GET /users/:id
+  one: r.get('/:id'),
+  // POST /users
+  create: r.post().validator(userSchema).selector((user: UserType) => user.id),
+  // PUT /users/:id (/:id by defaults)
+  update: r.put().validator(z.object({name: z.string(); id: z.string()})).T<UserType>(),
+  // DELETE /users/:id
+  delete: r.delete(),
+  // POST /users/:id/reset-password
+  resetPassword: r.post('/:id/reset-password').validator(z.object({password: z.string()})).T<boolean>(),
+}
+
+const api = createApi({routes: { user }});
+```
+
 ## License
 
 MIT
