@@ -235,3 +235,41 @@ export class RouterBuilder {
 export const createRouter = () => new RouterBuilder();
 
 export const isRoute = (value: any): value is AnyRoute => value && value[IsRoute] === true;
+
+/**
+ * Create a resource with base path
+ *
+ * @example
+ * ```ts
+ * const userResource = createResource('/users');
+ * // user routes
+ * const user = {
+ *   list: userResource.get(), // GET /users
+ *   create: userResource.post(), // POST /users
+ *   update: userResource.put('/:id'), // PUT /users/:id
+ *   delete: userResource.delete('/:id'), // DELETE /users/:id
+ *   disabeld: userResource.post('/:id/disable'), // POST /users/:id/disable
+ * };
+ *
+ * const api = createApi({
+ *   routes: {
+ *     // add user routes
+ *     user
+ *   }
+ * })
+ * ```
+ *
+ * @param path base path
+ * @returns
+ */
+export const createResource = <T extends string>(path: T) => {
+  return {
+    get: <I extends string = ''>(pk: I = '' as I) => new RouterBuilder().get(`${path}${pk}`),
+    post: <A extends string = ''>(action: A = '' as A) =>
+      new RouterBuilder().post(`${path}${action}`),
+    put: <I extends string = '/:id'>(pk: I = '/:id' as I) =>
+      new RouterBuilder().put(`${path}${pk}`),
+    delete: <I extends string = '/:id'>(pk: I = '/:id' as I) =>
+      new RouterBuilder().delete(`${path}${pk}`),
+  };
+};
