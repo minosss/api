@@ -4,6 +4,7 @@
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "build": "nx affected --target=build --exclude=examples/**",
+    "build:all": "nx run-many --target=build  --exclude=examples/**",
     "test:lib": "nx affected --target=test:lib --exclude=examples/**",
     "test:format": "pnpm run prettier --check",
     "prettier": "prettier --ignore-unknown '**/*'"
