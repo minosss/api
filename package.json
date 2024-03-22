@@ -28,5 +28,10 @@
   },
   "lint-staged": {
     "*{.js,.ts,.tsx,.json}": "prettier --write"
+  },
+  "git": {
+    "bump": {
+      "independent": true
+    }
   }
 }
