@@ -1,9 +1,10 @@
-import { isRoute, type AnyRoute } from './router';
-import type { ErrorMessage, AnyFn, IsUnknown } from './types';
+import { ApiError } from './error';
 import { getParser } from './parser';
 import { createProxy } from './proxy';
-import { ApiError } from './error';
+import { type AnyRoute, isRoute } from './router';
+import type { AnyFn, ErrorMessage, IsUnknown } from './types';
 
+// biome-ignore lint: Empty interface is used for type extension
 export interface Register {
   // api: typeof api
 }

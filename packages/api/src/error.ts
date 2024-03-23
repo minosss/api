@@ -17,9 +17,8 @@ export class ApiError extends Error {
       const error = new ApiError(messageOrError.message, code, route);
       error.cause = messageOrError;
       return error;
-    } else {
-      return new ApiError(messageOrError as string, code, route);
     }
+    return new ApiError(messageOrError as string, code, route);
   }
 
   static readonly ERR_BAD_INPUT = 'ERR_BAD_INPUT';

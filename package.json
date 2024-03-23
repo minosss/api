@@ -3,9 +3,6 @@
   "scripts": {
     "prepare": "husky",
     "lint-staged": "lint-staged",
-    "build": "nx affected --target=build --exclude=examples/**",
-    "build:all": "nx run-many --target=build  --exclude=examples/**",
-    "test:lib": "nx affected --target=test:lib --exclude=examples/**",
     "test:format": "pnpm run prettier --check",
     "prettier": "prettier --ignore-unknown '**/*'"
   },
@@ -16,12 +13,12 @@
     "@types/react-dom": "^18.2.15",
     "@vitest/coverage-istanbul": "^1.3.1",
     "@vitest/ui": "^1.0.4",
-    "@yme/prettier-config": "^2.0.0",
+    "@yme/prettier-config": "^2.1.1",
     "husky": "^9.0.11",
     "jsdom": "^24.0.0",
     "lint-staged": "^15.2.2",
-    "nx": "18.0.4",
     "prettier": "^3.2.5",
+    "turbo": "^1.13.0",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",
     "vitest": "^1.3.1"
