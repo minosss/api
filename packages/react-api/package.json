@@ -34,7 +34,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@yme/api": "workspace:*"
+    "@yme/api": "workspace:*",
+    "type-fest": "4.20.1"
   },
   "peerDependencies": {
     "@yme/api": "workspace:*",

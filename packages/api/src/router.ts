@@ -232,7 +232,7 @@ export class RouterBuilder {
   }
 }
 
-export const createRouter = () => new RouterBuilder();
+export const createRouter: () => RouterBuilder = () => new RouterBuilder();
 
 export const isRoute = (value: any): value is AnyRoute => value && value[IsRoute] === true;
 
@@ -265,7 +265,7 @@ export const isRoute = (value: any): value is AnyRoute => value && value[IsRoute
 export const createResource = <T extends string>(path: T) => {
   return {
     get: <I extends string = ''>(pk: I = '' as I) => new RouterBuilder().get(`${path}${pk}`),
-    post: <A extends string = ''>(action: A = '' as A) =>
+    post: <I extends string = ''>(action: I = '' as I) =>
       new RouterBuilder().post(`${path}${action}`),
     put: <I extends string = '/:id'>(pk: I = '/:id' as I) =>
       new RouterBuilder().put(`${path}${pk}`),

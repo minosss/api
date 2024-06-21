@@ -1,21 +1,24 @@
+import { type AnyRoute, isRoute } from './router';
+import type { AnyFn, IsUnknown } from './types';
 import { ApiError } from './error';
 import { getParser } from './parser';
 import { createProxy } from './proxy';
-import { type AnyRoute, isRoute } from './router';
-import type { AnyFn, ErrorMessage, IsUnknown } from './types';
 
-// biome-ignore lint: Empty interface is used for type extension
-export interface Register {
-  // api: typeof api
+function isPromise(value: any): value is Promise<any> {
+  return value instanceof Promise;
 }
 
-// export interface RoutesRegister {}
-
-export const Nothing = Object.freeze(undefined);
+/**
+ * Skip input if it's undefined
+ *
+ * @example
+ * api.users.all(Nothing, { ... });
+ * api.users.all(undefined, { ... });
+ * api.users.all(void 0, { ... });
+ */
+export const Nothing: undefined = Object.freeze(undefined);
 
 export const API_HTTP_METHOD = 'http';
-
-type UnRegister = ErrorMessage<'Waiting register api client'>;
 
 export type ExtractApiPaths<T> = T extends object
   ? {
@@ -24,10 +27,6 @@ export type ExtractApiPaths<T> = T extends object
         | `${K & string}.${ExtractApiPaths<T[K]>}`;
     }[keyof T]
   : never;
-
-export type CurrentApiPaths = ExtractApiPaths<
-  Register extends { api: infer A } ? A : Record<UnRegister, never>
->;
 
 export type BaseRequestConfig =
   | {
@@ -43,23 +42,29 @@ export type BaseRequestConfig =
       data: any;
     };
 
-export type RequestConfig = Register extends { api: { http: AnyFn } }
-  ? Omit<Parameters<Register['api']['http']>[0], keyof BaseRequestConfig>
-  : UnRegister;
+type RouteRequestConfig<T> = Omit<T, keyof BaseRequestConfig>;
+type DefaultRequestConfig = Record<string, any>;
+
+/**
+ * Return first argument of http function
+ */
+export type RequestConfig<Client> = Client extends { http: AnyFn }
+  ? RouteRequestConfig<Parameters<Client['http']>[0]>
+  : DefaultRequestConfig;
 
 export interface Routes {
   readonly [key: string]: AnyRoute | Routes;
 }
 
-type RouteToRequest<R extends AnyRoute> =
+type RouteToRequest<R extends AnyRoute, A extends ApiOptions> =
   IsUnknown<R['def']['_input']> extends true
-    ? (input?: R['def']['_input'], config?: RequestConfig) => Promise<R['def']['_output']>
-    : (input: R['def']['_input'], config?: RequestConfig) => Promise<R['def']['_output']>;
+    ? (input?: void, config?: RequestConfig<A>) => Promise<R['def']['_output']>
+    : (input: R['def']['_input'], config?: RequestConfig<A>) => Promise<R['def']['_output']>;
 
-type ExtractRoutes<T> = T extends AnyRoute
-  ? RouteToRequest<T>
+type ExtractRoutes<T, A extends ApiOptions> = T extends AnyRoute
+  ? RouteToRequest<T, A>
   : T extends Routes
-    ? { [K in keyof T]: ExtractRoutes<T[K]> }
+    ? { [K in keyof T]: ExtractRoutes<T[K], A> }
     : never;
 
 export interface ApiOptions {
@@ -78,7 +83,7 @@ export interface ApiOptions {
   onFinished?(config: any): void;
 }
 
-export type ApiClient<A extends ApiOptions> = ExtractRoutes<A['routes']> &
+export type ApiClient<A extends ApiOptions> = ExtractRoutes<A['routes'], A> &
   Record<typeof API_HTTP_METHOD, A['http']>;
 
 const cached = <T extends (...args: any[]) => any>(getValue: T) => {
@@ -178,10 +183,9 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
     // guard
     if (guard) {
       let isPass = guard(requestConfig, route);
-      if (typeof isPass === 'object' && typeof isPass.then === 'function') {
-        // wait for promise
-        isPass = await isPass;
-      }
+
+      isPass = isPromise(isPass) ? await isPass : isPass;
+
       if (isPass !== true) {
         throw ApiError.from(
           `You don't have access to ${requestConfig.method} ${requestConfig.url}`,
@@ -195,9 +199,9 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
 
     try {
       let response = http(requestConfig);
-      if (typeof response === 'object' && typeof response.then === 'function') {
-        response = await response;
-      }
+
+      response = isPromise(response) ? await response : response;
+
       const nextResponse = getParser(transform)(response);
       onSuccess?.(nextResponse);
       return nextResponse;

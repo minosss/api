@@ -1,60 +1,44 @@
-import type { CurrentApiPaths, Register, ErrorMessage } from '@yme/api';
+import type { Paths, Get } from 'type-fest';
+import type { ApiClient, ApiOptions } from '@yme/api';
 import { createContext, useContext } from 'react';
 
-type CurrentApiClient = Register extends { api: infer T }
-  ? T
-  : ErrorMessage<'Waiting register api client'>;
-
-export interface ApiContext {
-  api: CurrentApiClient;
+export interface ApiContext<A extends ApiOptions> {
+  api: ApiClient<A>;
 }
 
-const Context = createContext<ApiContext | null>(null);
+export function createApiProvider<A extends ApiOptions>(api: ApiClient<A>) {
+  const Context = createContext<ApiContext<A> | null>(null);
 
-export interface ApiProviderProps {
-  api: CurrentApiClient;
-  children: React.ReactNode;
-}
+  function ApiProvider(props: React.PropsWithChildren) {
+    return <Context.Provider value={{ api }}>{props.children}</Context.Provider>;
+  }
 
-export const ApiProvider: React.FC<ApiProviderProps> = (props) => {
-  return <Context.Provider value={{ api: props.api }}>{props.children}</Context.Provider>;
-};
+  function useApiClient(): ApiClient<A> {
+    const ctx = useContext(Context);
+    if (ctx == null) throw new Error('useApiClient must be used within a ApiProvider');
+    return ctx.api;
+  }
 
-type InvalidApiKey = ErrorMessage<'Invalid api key'>;
+  type ExtractApiFn<Key extends string> = Get<ApiClient<A>, Key>;
 
-type ExtractApiFn<
-  Key extends string,
-  Api = CurrentApiClient,
-> = Key extends `${infer Curr}.${infer Rest}`
-  ? ExtractApiFn<Rest, Curr extends keyof Api ? Api[Curr] : InvalidApiKey>
-  : Key extends keyof Api
-    ? Api[Key]
-    : InvalidApiKey;
+  type CurrentApiPaths = Paths<ApiClient<A>>;
 
-/**
- * api function by route
- *
- * @param path route of api
- */
-export function useApi<T extends CurrentApiPaths>(path: T): ExtractApiFn<T> | undefined;
-/**
- * return api client
- */
-export function useApi(path?: undefined): CurrentApiClient;
-export function useApi(path: any) {
-  const api = useContext(Context)?.api;
-  // ensure the context is set
-  if (api == null) throw new Error('useApi must be used within a ApiProvider');
+  function useApi<T extends CurrentApiPaths>(path: T): ExtractApiFn<T> {
+    const client = useApiClient();
 
-  if (typeof path === 'string') {
     const paths = path.split('.');
-    let result: any = api;
+    let fn: any = client;
     for (const k of paths) {
-      if (result) {
-        result = result[k as keyof typeof result];
+      if (fn) {
+        fn = fn[k as keyof typeof fn];
       }
     }
-    return result;
+    return fn;
   }
-  return api;
+
+  return {
+    ApiProvider,
+    useApiClient,
+    useApi,
+  };
 }

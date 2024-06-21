@@ -25,7 +25,14 @@ So I create this package to solve these problems. (I hope so)
 ## Install
 
 ```sh
+# pnpm
 pnpm add @yme/api
+
+# npm
+npm add @yme/api
+
+# yarn
+yarn add @yme/api
 ```
 
 ## Quick Start
@@ -88,12 +95,6 @@ const api = createApi({
   http: request,
   routes,
 });
-
-declare module '@yme/api' {
-  interface Register {
-    api: typeof api;
-  }
-}
 
 // use api
 const userId = await api.users.create({ username: 'yoyo', password: 'yoyo123' });
