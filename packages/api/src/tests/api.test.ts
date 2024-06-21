@@ -58,7 +58,7 @@ describe('createApi', () => {
   test('should throw an error if the route definition is not found', async () => {
     mockGuard.mockResolvedValue(true);
 
-    expect((api.user as any).notFound()).rejects.toThrow('Can not found route def.');
+    expect((api.user as any).notFound()).rejects.toThrow('Can not found route.');
     expect(mockHttp).not.toBeCalled();
     expect(mockSuccess).not.toBeCalled();
     expect(mockError).not.toBeCalled();

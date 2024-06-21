@@ -1,5 +1,5 @@
 import { anyParser } from '../parser';
-import { createRouter } from '../router';
+import { createResource, createRouter } from '../router';
 
 describe('createRouter', () => {
   test('should return a router object', () => {
@@ -54,5 +54,23 @@ describe('createRouter', () => {
     expect(route.def.transform).toBeUndefined();
     expect(route.def._input).toBeUndefined();
     expect(route.def._output).toBeUndefined();
+  });
+
+  test('resource with prefix path', () => {
+    const resource = createResource('/users');
+    const routeGet = resource.get();
+    const routePost = resource.post();
+    const routePut = resource.put();
+    const routeDelete = resource.delete();
+
+    expect(routeGet.def.method).toBe('get');
+    expect(routePost.def.method).toBe('post');
+    expect(routePut.def.method).toBe('put');
+    expect(routeDelete.def.method).toBe('delete');
+
+    expect(routeGet.def.path).toBe('/users');
+    expect(routePost.def.path).toBe('/users');
+    expect(routePut.def.path).toBe('/users/:id');
+    expect(routeDelete.def.path).toBe('/users/:id');
   });
 });
