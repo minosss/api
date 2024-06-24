@@ -96,6 +96,13 @@ const api = createApi({
   routes,
 });
 
+// ! DO NOT NEED TO DEFINE THIS (>=v1.3.0)
+declare module '@yme/api' {
+  interface Register {
+    api: typeof api;
+  }
+}
+
 // use api
 const userId = await api.users.create({ username: 'yoyo', password: 'yoyo123' });
 console.log(`user id: ${userId}`);
@@ -153,6 +160,10 @@ const user = {
 
 const api = createApi({routes: { user }});
 ```
+
+## Link
+
+- Use with react [react-api](./packages//react-api/readme.md)
 
 ## License
 
