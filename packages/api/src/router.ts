@@ -18,7 +18,10 @@ export interface RouteDef<I, O, M, P, S, T> {
   /** path of the route */
   path: P;
 
+  /** input parser */
   schema?: S;
+
+  /** output parser */
   transform?: T;
 }
 
@@ -169,11 +172,13 @@ export type PathParams<T extends string> = T extends `${string}:${string}`
       | (ExtractParams<T>['length'] extends 1 ? ParamValue : never)
   : unknown;
 
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
 /**
  * Router builder
  */
 export class RouterBuilder {
-  private createRoute<M extends string, T extends string>(
+  private createRoute<M extends Method, T extends string>(
     method: M,
     path: T,
   ): RouteBuilder<{
@@ -192,10 +197,10 @@ export class RouterBuilder {
   }
 
   /**
-   * define a route with method `get`
+   * define a route with method `GET`
    */
   get<T extends string>(path: T) {
-    return this.createRoute('get', path);
+    return this.createRoute('GET', path);
   }
 
   /**
@@ -214,21 +219,21 @@ export class RouterBuilder {
    * ```
    */
   post<T extends string>(path: T) {
-    return this.createRoute('post', path);
+    return this.createRoute('POST', path);
   }
 
   /**
    * define a route with method `put`
    */
   put<T extends string>(path: T) {
-    return this.createRoute('put', path);
+    return this.createRoute('PUT', path);
   }
 
   /**
    * define a route with method `delete`
    */
   delete<T extends string>(path: T) {
-    return this.createRoute('delete', path);
+    return this.createRoute('DELETE', path);
   }
 }
 

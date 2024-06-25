@@ -174,7 +174,7 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
       url,
     };
 
-    if (['post', 'put', 'patch'].includes(method)) {
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
       requestConfig.data = nextInput;
     } else {
       requestConfig.params = nextInput;
