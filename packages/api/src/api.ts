@@ -4,8 +4,8 @@ import { ApiError } from './error';
 import { getParser } from './parser';
 import { createProxy } from './proxy';
 
-function isPromise(value: any): value is Promise<any> {
-  return value instanceof Promise;
+async function promisify<T>(value: T | Promise<T>): Promise<T> {
+  return value instanceof Promise ? value : Promise.resolve(value);
 }
 
 /**
@@ -43,14 +43,14 @@ export type BaseRequestConfig =
     };
 
 type RouteRequestConfig<T> = Omit<T, keyof BaseRequestConfig>;
-type DefaultRequestConfig = Record<string, any>;
+type AnyRequestConfig = Record<string, any>;
 
 /**
  * Return first argument of http function
  */
 export type RequestConfig<Client> = Client extends { http: AnyFn }
   ? RouteRequestConfig<Parameters<Client['http']>[0]>
-  : DefaultRequestConfig;
+  : AnyRequestConfig;
 
 export interface Routes {
   readonly [key: string]: AnyRoute | Routes;
@@ -67,6 +67,13 @@ type ExtractRoutes<T, A extends ApiOptions> = T extends AnyRoute
     ? { [K in keyof T]: ExtractRoutes<T[K], A> }
     : never;
 
+type CallbackContext = {
+  route: AnyRoute;
+  request: BaseRequestConfig;
+  response?: unknown;
+  error?: unknown;
+};
+
 export interface ApiOptions {
   /** request function */
   http: AnyFn;
@@ -78,9 +85,10 @@ export interface ApiOptions {
   removePathParams?: boolean;
 
   guard?(config: any, route: AnyRoute): boolean | Promise<boolean>;
-  onSuccess?(output: any): void;
-  onError?(error: any): void;
-  onFinished?(config: any): void;
+
+  onSuccess?(ctx: CallbackContext): void;
+  onError?(ctx: CallbackContext): void;
+  onFinished?(ctx: CallbackContext): void;
 }
 
 export type ApiClient<A extends ApiOptions> = ExtractRoutes<A['routes'], A> &
@@ -168,7 +176,7 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
 
     // request config
 
-    const requestConfig: any = {
+    const requestConfig: BaseRequestConfig = {
       ...config,
       method,
       url,
@@ -182,9 +190,7 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
 
     // guard
     if (guard) {
-      let isPass = guard(requestConfig, route);
-
-      isPass = isPromise(isPass) ? await isPass : isPass;
+      const isPass = await promisify(guard(requestConfig, route));
 
       if (isPass !== true) {
         throw ApiError.from(
@@ -197,20 +203,30 @@ export function createApi<A extends ApiOptions>(options: A): ApiClient<A> {
 
     // http request
 
+    const ctx: CallbackContext = {
+      route,
+      request: requestConfig,
+    };
+
     try {
-      let response = http(requestConfig);
-
-      response = isPromise(response) ? await response : response;
-
+      // http request
+      const response = await promisify(http(requestConfig));
+      // parser response
       const nextResponse = getParser(transform)(response);
-      onSuccess?.(nextResponse);
+
+      ctx.response = nextResponse;
+      onSuccess?.(ctx);
+
       return nextResponse;
     } catch (error) {
       (error as any).request = requestConfig;
-      onError?.(error);
-      throw ApiError.from(error, ApiError.ERR_HTTP_ERROR);
+
+      ctx.error = ApiError.from(error, ApiError.ERR_HTTP_ERROR, route);
+      onError?.(ctx);
+
+      throw ctx.error;
     } finally {
-      onFinished?.(requestConfig);
+      onFinished?.(ctx);
     }
   }, []) as any;
 }
