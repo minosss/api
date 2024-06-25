@@ -11,7 +11,7 @@ describe('createRouter', () => {
     const router = createRouter();
     const route = router.get('/users');
     expect(route).toBeInstanceOf(Object);
-    expect(route.def.method).toBe('get');
+    expect(route.def.method).toBe('GET');
     expect(route.def.path).toBe('/users');
     expect(route.def.schema).toBe(anyParser);
     expect(route.def.transform).toBeUndefined();
@@ -39,16 +39,16 @@ describe('createRouter', () => {
     const routePost = router.post('/users');
     const routePut = router.put('/users');
     const routeDelete = router.delete('/users');
-    expect(routeGet.def.method).toBe('get');
-    expect(routePost.def.method).toBe('post');
-    expect(routePut.def.method).toBe('put');
-    expect(routeDelete.def.method).toBe('delete');
+    expect(routeGet.def.method).toBe('GET');
+    expect(routePost.def.method).toBe('POST');
+    expect(routePut.def.method).toBe('PUT');
+    expect(routeDelete.def.method).toBe('DELETE');
   });
 
   test('T should not to change the route', () => {
     const router = createRouter();
     const route = router.get('/users').T();
-    expect(route.def.method).toBe('get');
+    expect(route.def.method).toBe('GET');
     expect(route.def.path).toBe('/users');
     expect(route.def.schema).toBe(anyParser);
     expect(route.def.transform).toBeUndefined();
@@ -63,10 +63,10 @@ describe('createRouter', () => {
     const routePut = resource.put();
     const routeDelete = resource.delete();
 
-    expect(routeGet.def.method).toBe('get');
-    expect(routePost.def.method).toBe('post');
-    expect(routePut.def.method).toBe('put');
-    expect(routeDelete.def.method).toBe('delete');
+    expect(routeGet.def.method).toBe('GET');
+    expect(routePost.def.method).toBe('POST');
+    expect(routePut.def.method).toBe('PUT');
+    expect(routeDelete.def.method).toBe('DELETE');
 
     expect(routeGet.def.path).toBe('/users');
     expect(routePost.def.path).toBe('/users');

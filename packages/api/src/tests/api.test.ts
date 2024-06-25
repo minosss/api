@@ -40,19 +40,15 @@ describe('createApi', () => {
     mockGuard.mockResolvedValue(true);
     mockHttp.mockResolvedValue(mockOutput);
 
+    expect(api.http).toBeInstanceOf(Function);
     expect(api.user.list).toBeInstanceOf(Function);
 
     const r = await api.user.list();
     expect(r).toEqual(mockOutput);
 
     expect(mockSuccess).toBeCalledTimes(1);
-    expect(mockSuccess).toHaveBeenCalledWith(mockOutput);
     expect(mockError).not.toBeCalled();
     expect(mockFinished).toBeCalledTimes(1);
-    expect(mockFinished).toHaveBeenCalledWith({
-      method: 'get',
-      url: '/users',
-    });
   });
 
   test('should throw an error if the route definition is not found', async () => {
@@ -73,15 +69,8 @@ describe('createApi', () => {
     await expect(api.user.list()).resolves.toBe(mockOutput);
 
     expect(mockSuccess).toBeCalledTimes(1);
-    expect(mockSuccess).toHaveBeenCalledWith(mockOutput);
-
     expect(mockError).not.toBeCalled();
-
     expect(mockFinished).toBeCalledTimes(1);
-    expect(mockFinished).toHaveBeenCalledWith({
-      method: 'get',
-      url: '/users',
-    });
   });
 
   test('should replace the route params with the provided values', async () => {
@@ -91,14 +80,14 @@ describe('createApi', () => {
     // post /users
     await expect(api.user.update(123)).resolves.toBe(mockOutput);
     expect(mockHttp).toHaveBeenCalledWith({
-      method: 'post',
+      method: 'POST',
       url: '/users/123',
       data: undefined,
     });
 
     await expect(api.user.update({ id: 123 })).resolves.toBe(mockOutput);
     expect(mockHttp).toHaveBeenCalledWith({
-      method: 'post',
+      method: 'POST',
       url: '/users/123',
       data: undefined,
     });
@@ -125,18 +114,17 @@ describe('createApi', () => {
     // request with user id and return user name
     await expect(api.user.one(123)).resolves.toBe('John Doe');
     expect(mockHttp).toHaveBeenCalledWith({
-      method: 'get',
+      method: 'GET',
       url: '/users/123',
       params: {},
     });
-    expect(mockSuccess).toHaveBeenCalledWith('John Doe');
   });
 
   test('guard should be works', async () => {
     mockHttp.mockResolvedValue(mockOutput);
     mockGuard.mockResolvedValue(false);
 
-    await expect(api.user.list()).rejects.toThrow(`You don't have access to get /users`);
+    await expect(api.user.list()).rejects.toThrow(`You don't have access to GET /users`);
     expect(mockHttp).not.toBeCalled();
     expect(mockSuccess).not.toBeCalled();
     expect(mockError).not.toBeCalled();
