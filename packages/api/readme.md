@@ -24,6 +24,14 @@ const api = createApi({
   }
 });
 
+api.users.create({
+  username: 'john',
+  password: 'password',
+  age: 30,
+}).then((user) => {
+  console.log(user);
+});
+
 api.users.list().then((users) => {
   console.log(users);
 });
