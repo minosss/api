@@ -163,7 +163,7 @@ const api = createApi({routes: { user }});
 
 ## Link
 
-- Use with react [react-api](./packages//react-api/readme.md)
+- Use with react [react-api](./packages/react-api/readme.md)
 
 ## License
 
