@@ -10,6 +10,13 @@
     "url": "git@github.com:minosss/api.git",
     "directory": "packages/api"
   },
+  "keywords": [
+    "api",
+    "client",
+    "rest",
+    "http",
+    "https"
+  ],
   "license": "MIT",
   "exports": {
     ".": {
