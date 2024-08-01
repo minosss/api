@@ -1,7 +1,7 @@
 {
   "name": "api",
   "private": true,
-  "packageManager": "pnpm@9.4.0",
+  "packageManager": "pnpm@9.6.0",
   "scripts": {
     "prepare": "husky",
     "lint-staged": "lint-staged",

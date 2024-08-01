@@ -1,0 +1,57 @@
+# HTTP Client
+
+Generally, I use axios to handle HTTP requests.
+
+## Axios
+
+```ts
+import { axios } from 'axios';
+
+const httpClient = axios.create({
+  baseURL: 'https://your-api-server.com',
+});
+
+httpClient.interceptors.response.use(
+  // ！ ensure returns the data
+  (response) => {
+    return response.data;
+  },
+  (error) => Promise.reject(error),
+);
+
+// @yme/api will take the first argument as the http client options.
+const http = httpClient.request;
+
+const api = createApi({
+  http,
+  routes,
+});
+```
+
+## Custom HTTP Client
+
+```ts
+type FetchConfig = {
+  method: 'GET';
+  url: string;
+  data?: undefined;
+  params?: any;
+} | {
+  method: 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  data: any;
+  params?: undefined;
+};
+
+async function http({
+  method, url, data, params,
+}: FetchConfig) {
+  const response = await fetch(url, {
+    method,
+    body: data,
+    params,
+  });
+
+  return response.json();
+}
+```

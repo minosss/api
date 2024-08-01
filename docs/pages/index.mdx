@@ -1,0 +1,121 @@
+import { Tabs, Steps } from 'nextra/components'
+
+# Introduction
+
+**@yme/api** is a library for building type-safe API clients.
+
+## Features
+
+- **Type-Safe API Routes**: Ensures that your API routes are type-safe, reducing runtime errors and improving code quality.
+- **Zero Dependencies**: No external dependencies, making it lightweight and easy to integrate.
+- **No Server Required**: Can be used without setting up a server, simplifying the development process.
+- **Easy to Use**: Simple and intuitive API for defining and using routes.
+- **Flexible**: Can be used in various environments, including frontend and backend applications.
+
+## Getting started
+
+<Steps>
+### Install
+
+```sh npm2yarn
+npm i @yme/api
+```
+
+### Create API router
+
+```ts
+import { createRouter } from '@yme/api';
+
+const router = createRouter();
+```
+
+### Define routes
+
+We recommend using [Zod](https://github.com/colinhacks/zod) for defining schemas.
+
+```ts
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
+interface LoginOutput {
+  token: string;
+  expires: number;
+}
+
+const listSchema = z.object({
+  page: z.number().optional().default(1),
+  pageSize: z.number().optional().default(10),
+});
+
+interface IUser {
+  id: string;
+  name: string;
+}
+
+interface ListOutput<T> {
+  records: T[];
+  total: number;
+}
+
+const auth = {
+  login: router.post('/auth/login')
+    .validator(loginSchema)
+    .T<LoginOutput>(),
+};
+
+const routes = {
+  auth,
+  users: {
+    list: router.get('/users')
+      .validator(listSchema)
+      .T<ListOutput<IUser>>(),
+
+    // You can also use selector to get the total.
+    total: router.get('/users')
+      .T<ListOutput<IUser>>()
+      .selector(({ total }) => total),
+  },
+};
+```
+
+More route examples can be found [here](/route).
+
+### Create API client
+
+You can use [axios](https://github.com/axios/axios) or any other HTTP client library. The `http` function should return a `Promise` that resolves to the response data.
+
+```ts
+const api = createApi({
+  http: async ({
+    method, url, data, params
+  }) => {
+    // do request here
+    const response = await fetch(url, { method });
+    // return data
+    return response.json();
+  },
+  routes,
+});
+```
+
+### Done!
+
+We are ready to use the API. You can use the API like this:
+
+```ts
+// Login
+const { token } = await api.auth.login({
+  username: 'admin',
+  password: '123456',
+}, {
+  // You can pass any axios options here.
+});
+
+// your code here
+```
+
+</Steps>

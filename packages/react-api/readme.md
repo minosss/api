@@ -55,3 +55,5 @@ function User({ id }: { id: number }) {
   );
 }
 ```
+
+Read more in the [Documentation](https://yme.kagabase.com/).

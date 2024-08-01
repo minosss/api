@@ -1,0 +1,224 @@
+import { Callout } from 'nextra/components';
+
+# Route
+
+You need to create router before defining routes.
+
+```ts
+import { createRouter } from '@yme/api';
+
+const router = createRouter();
+```
+
+### Method and Path
+
+There are 4 methods: `GET`, `POST`, `PUT`, `DELETE`. And you can define a path with `:id` to represent a parameter.
+
+```ts
+// GET /users
+router.get('/users');
+
+// POST /users
+router.post('/users');
+
+// PUT /users/:id
+router.put('/users/:id');
+
+// DELETE /users/:id
+router.delete('/users/:id');
+```
+
+<Callout type='warning'>
+  The param of the path must be defined in the validator. And it will replace the path param and will be removed from the request by default.
+  (you can disabled `removePathParams` option in the `createApi` options)
+</Callout>
+
+```ts
+router.post('/users/:id/reset-password')
+  .validator(z.object({
+    id: z.string().min(1),
+    password: z.string(),
+  }));
+
+// POST /users/123/reset-password { password: '456' }
+api.users.resetPassword({ id: '123', password: '456' });
+```
+
+### Validator (Input)
+
+Zod is recommended. But you can also define a custom validator function.
+
+<Callout type='info'>
+  After the v1.4.0, you should define the validator otherwise it will be void.
+</Callout>
+
+```ts
+import { z } from 'zod';
+
+const createSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+});
+
+router.post('/users')
+  .validator(createSchema)
+  .T<UserType>()
+```
+
+Or use custom parser.
+
+```ts
+router.post('/users')
+  // custom parse function
+  .validator((
+    // how the input is passed to the function
+    input: { name: string; age: number }
+  ) => ({
+    // you can return any type
+    nickname: input.name,
+    age: input.age,
+  }));
+
+// or zod-like parser
+const schema = {
+  parse: (input: { name: string; age: number }) => ({
+    nickname: input.name,
+    age: input.age,
+  }),
+};
+
+router.post('/users')
+  .validator(schema);
+```
+
+### Selector (Output)
+
+When the request is completed, this defined type lets people know what data has been returned.
+Or your can format the data before returning.
+
+```ts
+router.post('/users')
+  .validator(listSchema)
+  .selector((
+    // the result of the request
+    output
+  ) => {
+    // you can return any type
+    return output;
+  });
+```
+
+Two ways to define the output type.
+
+```ts
+// use this if you don't need to reformat the data
+router.post('/users')
+  .validator(listSchema)
+  .T<{ records: UserType[]; total: number }>();
+
+// or
+router.post('/users')
+  .validator(listSchema)
+  .selector((
+    output: { records: UserType[]; total: number }
+  ) => ({
+    list: output.records,
+    total: output.total,
+  }));
+
+// or use both
+router.post('/users')
+  .validator(listSchema)
+  .T<{ list: UserType[]; total: number }>()
+  .selector((
+    // Already know the type
+    output
+  ) => ({
+    list: output.list,
+    total: output.total,
+  }));
+```
+
+### `T`
+
+The `T` method is used to define the input and output type of the route.
+
+```ts
+// input and output
+router.post('/users')
+  .T<{ page: number}, { list: UserType[] }>();
+
+// output only
+router.post('/users')
+  .T<{ list: UserType[] }>();
+
+// transform
+router.post('/users')
+  .T<{ page: number }, { list: UserType[] }>()
+  .validator((input) => ({
+    pageNum: input.page,
+  }))
+  .selector((output) => {
+    return output.list;
+  });
+```
+
+### Resource Route
+
+Define a route with prefix. `createResource` is a helper function to create a resource.
+
+```ts
+import { createResource } from '@yme/api';
+
+const userResource = createResource('/users');
+
+const userRoutes = {
+  list: userResource.get(), // GET /users
+  create: userResource.post(), // POST /users
+  update: userResource.put('/:id'), // PUT /users/:id
+  delete: userResource.delete('/:id'), // DELETE /users/:id
+  disabeld: userResource.post('/:id/disable'), // POST /users/:id/disable
+};
+```
+
+### Slice Route
+
+Slicing the route into smaller parts.
+
+```ts
+// sms.ts
+const router = createRouter();
+const sms = {
+  send: router.post('/sms/send'),
+};
+
+// email.ts
+const router = createRouter();
+const email = {
+  send: router.post('/email/send'),
+};
+
+// github.ts
+const router = createRouter();
+const github = {
+  login: router.post('/github/login'),
+};
+
+// google.ts
+const router = createRouter();
+const google = {
+  login: router.post('/google/login'),
+};
+
+// index.ts
+const routes = {
+  sms,
+  email,
+  github,
+  google,
+};
+```
+
+<Callout>
+I have not tested very large routes. If you have any problems, please open an issue.
+</Callout>
