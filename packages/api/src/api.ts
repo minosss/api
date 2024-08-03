@@ -30,17 +30,19 @@ export type ExtractApiPaths<T> = T extends object
 
 export type BaseRequestConfig =
   | {
-      method: string;
+      method: 'GET';
       url: string;
       params: any;
       data?: undefined;
     }
   | {
-      method: string;
+      method: 'POST' | 'PUT' | 'DELETE';
       url: string;
       params?: undefined;
       data: any;
     };
+
+export type SupportedMethods = BaseRequestConfig['method'];
 
 type RouteRequestConfig<T> = Omit<T, keyof BaseRequestConfig>;
 type AnyRequestConfig = Record<string, any>;

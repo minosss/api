@@ -1,5 +1,6 @@
 import type { DefaultValue, Overrite } from './types';
 import type { AnyParser, InferParser, Parser } from './parser';
+import type { SupportedMethods } from './api';
 import { anyParser } from './parser';
 
 // private symbol, it is used to check if the value is a route. It is not exported to the user.
@@ -172,13 +173,16 @@ export type PathParams<T extends string> = T extends `${string}:${string}`
       | (ExtractParams<T>['length'] extends 1 ? ParamValue : never)
   : unknown;
 
+/**
+ * @deprecated use `SupportedMethods` instead, it will be removed in the next major version
+ */
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 /**
  * Router builder
  */
 export class RouterBuilder {
-  private createRoute<M extends Method, T extends string>(
+  private createRoute<M extends SupportedMethods, T extends string>(
     method: M,
     path: T,
   ): RouteBuilder<{
@@ -264,6 +268,7 @@ export const isRoute = (value: any): value is AnyRoute => value && value[IsRoute
  * })
  * ```
  *
+ * @deprecated use `createRouter()` instead, it will be removed in the next major version
  * @param path base path
  * @returns
  */

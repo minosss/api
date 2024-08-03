@@ -5,8 +5,8 @@ export { createRouter, isRoute, createResource } from './router';
 export type {
   AnyRoute,
   AnyRouteDef,
-  Method,
   ParamValue,
+  Method,
   PathParams,
   RouteBuilder,
   RouterBuilder,
@@ -21,6 +21,7 @@ export type {
   ExtractApiPaths,
   RequestConfig,
   Routes,
+  SupportedMethods,
 } from './api';
 
 export type { AnyFn, DefaultValue, ErrorMessage, IsNull, IsUnknown, Overrite } from './types';
