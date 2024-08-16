@@ -1,5 +1,6 @@
-import { type AnyRoute, isRoute } from './router';
+import type { AnyRoute } from './router';
 import type { AnyFn, IsUnknown } from './types';
+import { isRoute } from './router';
 import { ApiError } from './error';
 import { getParser } from './parser';
 import { createProxy } from './proxy';
