@@ -35,7 +35,7 @@ export function replaceUrlParams(
             options.removePathParams && delete input[key];
           }
         } else {
-          // console.warn(`Bad params ${key} data.`);
+          console.warn(`Bad params ${key} data.`);
         }
       }
       ctx.config.url = url;

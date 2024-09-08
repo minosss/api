@@ -26,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@types/bun": "^1.1.8",
+    "@types/node": "^22.5.4",
     "publint": "^0.2.10",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"
