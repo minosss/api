@@ -1,6 +1,0 @@
-node_modules
-.nx
-coverage
-build
-dist
-pnpm-lock.yaml

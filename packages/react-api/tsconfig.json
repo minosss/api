@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "types": ["vitest/globals"]
-  },
-  "include": ["./src/**/*.ts", "vite.config.ts"]
-}
