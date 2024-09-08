@@ -19,7 +19,7 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 ## Quick Start
 
 ```sh
-npm i @yme/api
+npm i @yme/api@next
 ```
 
 ```ts
