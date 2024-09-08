@@ -37,5 +37,9 @@
     "zod": {
       "optional": true
     }
+  },
+  "packageManager": "bun@1.1.26",
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
