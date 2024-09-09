@@ -16,6 +16,8 @@
   "scripts": {
     "clean": "rm -rf node_modules dist",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && publint --strict",
+    "prepublishOnly": "bun run build",
+    "release": "np",
     "test": "bun test --coverage",
     "lint": "biome lint",
     "format": "biome format --write ."
@@ -30,6 +32,7 @@
     "@types/node": "^22.5.4",
     "publint": "^0.2.10",
     "typescript": "^5.5.4",
+		"np": "^10.0.7",
     "zod": "^3.23.8"
   },
   "peerDependencies": {
