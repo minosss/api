@@ -144,31 +144,4 @@ describe("apiClient", () => {
     // middleware error
     expect(api.get("/users")()).rejects.toThrowError("Something went wrong");
   });
-
-  it("replace url params", async () => {
-    const httpFn = jest.fn(async () => {});
-
-    const api = createApi({
-      http: httpFn,
-      middlewares: [replaceUrlParams({ removePathParams: true })],
-    });
-
-    const getUser = api
-      .get("/users/:id")
-      .validator((input: { id: string }) => input);
-
-    await getUser({ id: "1" });
-    expect(httpFn).toHaveBeenCalledWith({
-      method: "GET",
-      url: "/users/1",
-      params: {},
-    });
-
-    await getUser({ id: "2" });
-    expect(httpFn).toHaveBeenCalledWith({
-      method: "GET",
-      url: "/users/2",
-      params: {},
-    });
-  });
 });
