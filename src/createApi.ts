@@ -1,12 +1,12 @@
 import { ApiError } from './error.js';
-import type { AnyRequestDef, HttpRequest, MiddlewareFn, Request, RequestConfig, RequestDef } from "./types.js";
+import type { AnyHttpRequest, AnyRequestDef, MiddlewareFn, Request, RequestConfig, RequestDef } from "./types.js";
 import { validate } from './validate.js';
 
 const methods = ['get', 'post', 'put', 'delete', 'patch'] as const;
 
-export interface Api<H extends HttpRequest> {
+export interface Api<H extends AnyHttpRequest> {
   http: H;
-  use(middleware: MiddlewareFn): Api<H>;
+  use(middleware: MiddlewareFn<H>): Api<H>;
   get<P extends string>(url: P, requestConfig?: RequestConfig<H>): Request<RequestDef<void, any, "GET", P, undefined, undefined, H>>;
   post<P extends string>(url: P, requestConfig?: RequestConfig<H>): Request<RequestDef<void, any, "POST", P, undefined, undefined, H>>;
   put<P extends string>(url: P, requestConfig?: RequestConfig<H>): Request<RequestDef<void, any, "PUT", P, undefined, undefined, H>>;
@@ -14,15 +14,15 @@ export interface Api<H extends HttpRequest> {
   patch<P extends string>(url: P, requestConfig?: RequestConfig<H>): Request<RequestDef<void, any, "PATCH", P, undefined, undefined, H>>;
 }
 
-export function createApi<H extends HttpRequest>(options: {
+export function createApi<H extends AnyHttpRequest>(options: {
   http: H;
-  middlewares?: MiddlewareFn[];
+  middlewares?: MiddlewareFn<H>[];
 }): Api<H> {
   const { http, middlewares = [] } = options;
 
   const api: any = {
     http,
-    use: (middleware: MiddlewareFn) => {
+    use: (middleware: MiddlewareFn<H>) => {
       return createApi({
         http,
         middlewares: [...middlewares, middleware],
@@ -52,7 +52,7 @@ function buildRequest<Def extends AnyRequestDef>(options: {
   schema?: Def["schema"];
   transform?: Def["transform"];
   http: Def["http"];
-  middlewares: MiddlewareFn[];
+  middlewares: MiddlewareFn<Def['http']>[];
 }): Request<Def> {
   async function request(data: any, requestConfig: any = {}) {
     const method = options.method;
@@ -77,10 +77,10 @@ function buildRequest<Def extends AnyRequestDef>(options: {
     };
 
     // TODO better middlewares
-    const ctx = { config, parsedInput: input, output: undefined };
+    const ctx = { http: options.http, config, parsedInput: input, output: undefined };
 
     try {
-      const middlewares: MiddlewareFn[] = [
+      const middlewares: MiddlewareFn<Def['http']>[] = [
         ...options.middlewares,
         async (ctx, next) => {
           const output = await options.http(config);

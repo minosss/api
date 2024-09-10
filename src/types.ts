@@ -27,9 +27,13 @@ export interface GenericRequestConfig {
   data?: any;
 }
 
-export type HttpRequest = (config: GenericRequestConfig) => Promise<any>;
+export type HttpRequest = <C extends GenericRequestConfig>(config: C) => Promise<any>;
 
-export interface RequestDef<I, O, M, U, S, T, H extends HttpRequest> {
+export type HttpConfig<H extends AnyHttpRequest> = Parameters<H>[0];
+
+export type AnyHttpRequest = (config: any) => Promise<any>;
+
+export interface RequestDef<I, O, M, U, S, T, H extends AnyHttpRequest> {
   input: I;
   output: O;
   method: M;
@@ -41,8 +45,8 @@ export interface RequestDef<I, O, M, U, S, T, H extends HttpRequest> {
 
 export type AnyRequestDef = RequestDef<any, any, any, any, any, any, any>;
 
-export type RequestConfig<H extends HttpRequest> = Omit<
-  Parameters<H>[0],
+export type RequestConfig<H extends AnyHttpRequest> = Omit<
+  HttpConfig<H>,
   keyof GenericRequestConfig
 >;
 
@@ -107,13 +111,14 @@ export interface Request<Def extends AnyRequestDef> {
   >;
 }
 
-export interface MiddlewareContext {
-  config: GenericRequestConfig;
+export interface MiddlewareContext<H extends AnyHttpRequest = AnyHttpRequest> {
+  http: H;
+  config: HttpConfig<H>;
   parsedInput: unknown;
   output?: unknown;
 }
 
-export type MiddlewareFn = (
-  ctx: MiddlewareContext,
+export type MiddlewareFn<H extends AnyHttpRequest = AnyHttpRequest> = (
+  ctx: MiddlewareContext<H>,
   next: () => Promise<void>,
 ) => Promise<void>;
