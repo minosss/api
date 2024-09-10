@@ -23,7 +23,8 @@
     "format": "biome format --write ."
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "next"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
@@ -32,7 +33,7 @@
     "@types/node": "^22.5.4",
     "publint": "^0.2.10",
     "typescript": "^5.5.4",
-		"np": "^10.0.7",
+    "np": "^10.0.7",
     "zod": "^3.23.8"
   },
   "peerDependencies": {
