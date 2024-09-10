@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from "bun:test";
-import { replaceUrlParams } from "../src/replaceUrlParams.js";
+import { replaceUrlParams } from "../src/middleware.js";
 import { createApi } from "../src/createApi.js";
 
 describe("apiClient", () => {

@@ -1,4 +1,4 @@
-import type { MiddlewareFn } from "./types.js";
+import type { MiddlewareFn } from "../types.js";
 
 function isObject(value: any): value is Record<string, any> {
   return typeof value === "object" && !Array.isArray(value) && value !== null;
