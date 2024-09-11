@@ -3,11 +3,17 @@ import type { AnyHttpRequest, HttpConfig, MiddlewareFn } from '../types.js';
 /**
  * refresh token middleware, token expired will be refreshed automatically
  */
-export function refreshToken<H extends AnyHttpRequest, R extends (...args: any[]) => Promise<any>>(options: {
+export function refreshToken<
+  H extends AnyHttpRequest,
+  R extends (...args: any[]) => Promise<any>,
+>(options: {
   /** refresh token function, should return a promise, do replace token of http(config) here */
   refreshTokenFn: R;
   /** retry before refreshing, you should modify the config before retry */
-  beforeRetry?: (config: HttpConfig<H>, refreshResult: Awaited<ReturnType<R>>) => HttpConfig<H>;
+  beforeRetry?: (
+    config: HttpConfig<H>,
+    refreshResult: Awaited<ReturnType<R>>,
+  ) => HttpConfig<H>;
   /** should refresh or not */
   shouldRefresh: (error: any, config: HttpConfig<H>) => boolean;
 }): MiddlewareFn<H> {
@@ -36,7 +42,11 @@ export function refreshToken<H extends AnyHttpRequest, R extends (...args: any[]
       return refreshing
         .then((value) => {
           refreshing = null;
-          return ctx.http(options.beforeRetry ? options.beforeRetry(ctx.config, value) : ctx.config);
+          return ctx.http(
+            options.beforeRetry
+              ? options.beforeRetry(ctx.config, value)
+              : ctx.config,
+          );
         })
         .catch((error) => {
           // Failed again
@@ -44,7 +54,7 @@ export function refreshToken<H extends AnyHttpRequest, R extends (...args: any[]
         })
         .then((output) => {
           ctx.output = output;
-        })
+        });
     }
-  }
+  };
 }

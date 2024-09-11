@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from 'zod';
 
 export type TransformFn<I = any, O = I> = (v: I) => O | Promise<O>;
 
@@ -27,7 +27,9 @@ export interface GenericRequestConfig {
   data?: any;
 }
 
-export type HttpRequest = <C extends GenericRequestConfig>(config: C) => Promise<any>;
+export type HttpRequest = <C extends GenericRequestConfig>(
+  config: C,
+) => Promise<any>;
 
 export type HttpConfig<H extends AnyHttpRequest> = Parameters<H>[0];
 
@@ -53,60 +55,60 @@ export type RequestConfig<H extends AnyHttpRequest> = Omit<
 export interface Request<Def extends AnyRequestDef> {
   _def: Def;
 
-  (input: Def["input"]): Promise<Def["output"]>;
+  (input: Def['input']): Promise<Def['output']>;
   (
-    input: Def["input"],
-    requestConfig: RequestConfig<Def["http"]>,
-  ): Promise<Def["output"]>;
+    input: Def['input'],
+    requestConfig: RequestConfig<Def['http']>,
+  ): Promise<Def['output']>;
 
-  validator<OS extends Transform = Transform<Def["input"], unknown>>(
+  validator<OS extends Transform = Transform<Def['input'], unknown>>(
     schema: OS,
   ): Request<
     RequestDef<
       InferInput<OS>,
-      Def["output"],
-      Def["method"],
-      Def["url"],
+      Def['output'],
+      Def['method'],
+      Def['url'],
       OS,
-      Def["transform"],
-      Def["http"]
+      Def['transform'],
+      Def['http']
     >
   >;
 
-  selector<OT extends Transform = Transform<Def["output"], unknown>>(
+  selector<OT extends Transform = Transform<Def['output'], unknown>>(
     transform: OT,
   ): Request<
     RequestDef<
-      Def["input"],
+      Def['input'],
       InferOutput<OT>,
-      Def["method"],
-      Def["url"],
-      Def["schema"],
+      Def['method'],
+      Def['url'],
+      Def['schema'],
       OT,
-      Def["http"]
+      Def['http']
     >
   >;
 
-  T<O = Def["output"]>(): Request<
+  T<O = Def['output']>(): Request<
     RequestDef<
-      Def["input"],
+      Def['input'],
       O,
-      Def["method"],
-      Def["url"],
-      Def["schema"],
-      Def["transform"],
-      Def["http"]
+      Def['method'],
+      Def['url'],
+      Def['schema'],
+      Def['transform'],
+      Def['http']
     >
   >;
-  T<I = Def["input"], O = Def["output"]>(): Request<
+  T<I = Def['input'], O = Def['output']>(): Request<
     RequestDef<
       I,
       O,
-      Def["method"],
-      Def["url"],
-      Def["schema"],
-      Def["transform"],
-      Def["http"]
+      Def['method'],
+      Def['url'],
+      Def['schema'],
+      Def['transform'],
+      Def['http']
     >
   >;
 }

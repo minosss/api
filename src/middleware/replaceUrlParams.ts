@@ -1,7 +1,7 @@
-import type { MiddlewareFn } from "../types.js";
+import type { MiddlewareFn } from '../types.js';
 
 function isObject(value: any): value is Record<string, any> {
-  return typeof value === "object" && !Array.isArray(value) && value !== null;
+  return typeof value === 'object' && !Array.isArray(value) && value !== null;
 }
 
 export interface ReplaceUrlParamsOptions {
@@ -29,8 +29,8 @@ export function replaceUrlParams(
         const key = param.slice(1);
         if (isObject(input)) {
           const value = input[key];
-          if (typeof value === "number" || typeof value === "string") {
-            url = url.replace(param, value.toString().replace(/\s/g, ""));
+          if (typeof value === 'number' || typeof value === 'string') {
+            url = url.replace(param, value.toString().replace(/\s/g, ''));
             // remove path params
             options.excludePathParams && delete input[key];
           }

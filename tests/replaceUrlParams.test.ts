@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from 'bun:test';
 import { replaceUrlParams } from '../src/middleware.js';
 
 describe('replaceUrlParams', () => {
@@ -29,7 +29,9 @@ describe('replaceUrlParams', () => {
       parsedInput: { id: 1 },
     };
 
-    replaceUrlParams({ excludePathParams: false })(ctx, () => Promise.resolve());
+    replaceUrlParams({ excludePathParams: false })(ctx, () =>
+      Promise.resolve(),
+    );
     expect(ctx.config.url).toBe('/users/1');
     expect(ctx.parsedInput).toEqual({ id: 1 });
   });

@@ -1,9 +1,9 @@
-import type { z } from "zod";
-import type { Transform } from "./types.js";
+import type { z } from 'zod';
+import type { Transform } from './types.js';
 
 const is = {
-  generic: (value: any): value is Function => typeof value === "function",
-  zod: (value: any): value is z.ZodType => "_def" in value,
+  generic: (value: any): value is Function => typeof value === 'function',
+  zod: (value: any): value is z.ZodType => '_def' in value,
 };
 
 // TODO support other schema

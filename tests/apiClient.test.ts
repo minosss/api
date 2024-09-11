@@ -1,20 +1,20 @@
-import { describe, it, expect, jest } from "bun:test";
-import { replaceUrlParams } from "../src/middleware.js";
-import { createApi } from "../src/createApi.js";
+import { describe, it, expect, jest } from 'bun:test';
+import { replaceUrlParams } from '../src/middleware.js';
+import { createApi } from '../src/createApi.js';
 
-describe("apiClient", () => {
-  it("create a api client", async () => {
+describe('apiClient', () => {
+  it('create a api client', async () => {
     const httpFn = jest.fn(async () => {});
 
     const api = createApi({
       http: httpFn,
     });
 
-    const getUsers = api.get("/users");
-    const createUser = api.post("/users");
-    const updateUser = api.put("/users");
-    const deleteUser = api.delete("/users");
-    const patchUser = api.patch("/users");
+    const getUsers = api.get('/users');
+    const createUser = api.post('/users');
+    const updateUser = api.put('/users');
+    const deleteUser = api.delete('/users');
+    const patchUser = api.patch('/users');
 
     expect(getUsers).toBeInstanceOf(Function);
     expect(createUser).toBeInstanceOf(Function);
@@ -24,15 +24,15 @@ describe("apiClient", () => {
 
     await getUsers();
     expect(httpFn).toHaveBeenCalledWith({
-      method: "GET",
-      url: "/users",
+      method: 'GET',
+      url: '/users',
       params: undefined,
     });
 
     await createUser();
     expect(httpFn).toHaveBeenCalledWith({
-      method: "POST",
-      url: "/users",
+      method: 'POST',
+      url: '/users',
       data: undefined,
     });
 
@@ -43,7 +43,7 @@ describe("apiClient", () => {
     expect(httpFn).toHaveBeenCalledTimes(5);
   });
 
-  it("api client with middlewares", async () => {
+  it('api client with middlewares', async () => {
     const order: number[] = [];
 
     const httpFn = jest.fn(async () => {
@@ -65,22 +65,22 @@ describe("apiClient", () => {
       middlewares: [loggerFn, authFn],
     });
 
-    await api.get("/users")();
+    await api.get('/users')();
 
     expect(order).toEqual([2, 4, 1, 5, 3]);
 
     expect(httpFn).toHaveBeenCalledWith({
-      method: "GET",
-      url: "/users",
+      method: 'GET',
+      url: '/users',
       params: undefined,
     });
     expect(loggerFn).toHaveBeenCalled();
     expect(authFn).toHaveBeenCalled();
   });
 
-  it("with validator and selector", async () => {
+  it('with validator and selector', async () => {
     const httpFn = jest.fn(async ({ params }) => {
-      return { ...params, name: "John" };
+      return { ...params, name: 'John' };
     });
 
     const api = createApi({
@@ -88,20 +88,20 @@ describe("apiClient", () => {
     });
 
     const getUser = api
-      .get("/users")
+      .get('/users')
       .validator((input: { id: string }) => input)
       .selector((user: { name: string }) => user.name);
 
-    expect(await getUser({ id: "1" })).toBe("John");
+    expect(await getUser({ id: '1' })).toBe('John');
 
     expect(httpFn).toHaveBeenCalledWith({
-      method: "GET",
-      url: "/users",
-      params: { id: "1" },
+      method: 'GET',
+      url: '/users',
+      params: { id: '1' },
     });
   });
 
-  it("extends api client with middlewares", async () => {
+  it('extends api client with middlewares', async () => {
     const httpFn = jest.fn(async () => {});
     const loggerFn = jest.fn((_, next) => next());
     const authFn = jest.fn((_, next) => next());
@@ -111,23 +111,23 @@ describe("apiClient", () => {
       middlewares: [loggerFn],
     });
 
-    await api.get("/users")();
+    await api.get('/users')();
 
     const productApi = api.use(authFn);
-    await productApi.get("/users")();
+    await productApi.get('/users')();
 
     expect(loggerFn).toHaveBeenCalledTimes(2);
     expect(authFn).toHaveBeenCalledTimes(1);
   });
 
-  it("handle error", async () => {
+  it('handle error', async () => {
     const httpFn = jest.fn(async () => {
-      throw new Error("Bad request");
+      throw new Error('Bad request');
     });
     let run = false;
     const once = jest.fn((_, next) => {
       if (run) {
-        throw new Error("Something went wrong");
+        throw new Error('Something went wrong');
       }
       run = true;
       return next();
@@ -138,10 +138,10 @@ describe("apiClient", () => {
       middlewares: [once],
     });
 
-    expect(api.get("/users")()).rejects.toThrowError("Bad request");
+    expect(api.get('/users')()).rejects.toThrowError('Bad request');
     expect(once).toHaveBeenCalled();
 
     // middleware error
-    expect(api.get("/users")()).rejects.toThrowError("Something went wrong");
+    expect(api.get('/users')()).rejects.toThrowError('Something went wrong');
   });
 });
