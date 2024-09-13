@@ -40,20 +40,19 @@ export function refreshToken<
       }
 
       return refreshing
+        .catch((error) => Promise.reject(error))
         .then((value) => {
-          refreshing = null;
           return ctx.http(
             options.beforeRetry
               ? options.beforeRetry(ctx.config, value)
               : ctx.config,
           );
         })
-        .catch((error) => {
-          // Failed again
-          throw error;
-        })
         .then((output) => {
           ctx.output = output;
+        })
+        .finally(() => {
+          refreshing = null;
         });
     }
   };
