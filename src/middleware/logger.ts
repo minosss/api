@@ -33,10 +33,10 @@ export function logger(fn: LoggerFn = console.log): MiddlewareFn {
     const { method, url } = ctx.config;
     const start = Date.now();
 
-    log(fn, prefixSet.Incoming, method, url);
+    log(fn, prefixSet.Outgoing, method, url);
 
     await next();
 
-    log(fn, prefixSet.Outgoing, method, url, 0, time(start));
+    log(fn, prefixSet.Incoming, method, url, 0, time(start));
   }
 }
