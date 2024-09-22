@@ -9,8 +9,14 @@
   "keywords": ["api", "client", "rest", "http", "https"],
   "license": "MIT",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "default": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware.d.ts",
+      "default": "./dist/middleware.js"
+    }
   },
   "files": ["dist"],
   "scripts": {

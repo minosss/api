@@ -33,7 +33,7 @@ export type HttpRequest = <C extends GenericRequestConfig>(
 
 export type HttpConfig<H extends AnyHttpRequest> = Parameters<H>[0];
 
-export type AnyHttpRequest = (config: any) => Promise<any>;
+export type AnyHttpRequest = (...args: any[]) => Promise<any>;
 
 export interface RequestDef<I, O, M, U, S, T, H extends AnyHttpRequest> {
   input: I;
