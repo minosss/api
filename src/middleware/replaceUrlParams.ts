@@ -16,9 +16,10 @@ export interface ReplaceUrlParamsOptions {
  * Replace url params with input. e.g. `/users/:id` to `/users/1`
  */
 export function replaceUrlParams(
-  options: ReplaceUrlParamsOptions = { excludePathParams: true },
+  options: ReplaceUrlParamsOptions = {},
 ): MiddlewareFn {
   return async (ctx, next) => {
+    const { excludePathParams = true } = options;
     // replace url params with input
     const params = ctx.config.url.match(/:\w+/g);
 
@@ -32,7 +33,7 @@ export function replaceUrlParams(
           if (typeof value === 'number' || typeof value === 'string') {
             url = url.replace(param, value.toString().replace(/\s/g, ''));
             // remove path params
-            options.excludePathParams && delete input[key];
+            (excludePathParams === true) && delete input[key];
           }
         } else {
           console.warn(`Bad params ${key} data.`);
