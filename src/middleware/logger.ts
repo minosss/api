@@ -8,8 +8,10 @@ const prefixSet = {
   Outgoing: '-->',
 }
 
+const now = () => performance.now();
+
 function time(start: number) {
-  const delta = Date.now() - start;
+  const delta = now() - start;
   return delta < 1000 ? `${delta}ms` : `${Math.round(delta / 1000)}s`;
 }
 
@@ -31,7 +33,7 @@ function log(
 export function logger(fn: LoggerFn = console.log): MiddlewareFn {
   return async function logger(ctx, next) {
     const { method, url } = ctx.config;
-    const start = Date.now();
+    const start = now();
 
     log(fn, prefixSet.Outgoing, method, url);
 
