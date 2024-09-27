@@ -62,9 +62,12 @@ const userId = await createUser({ name: 'John', age: 30 });
 With middlewares:
 
 ```ts
+import { logger, replaceUrlParams } from '@yme/api/middleware';
+
 const api = createApi({
   http: async (config) => {},
   middlewares: [
+    logger(),
     // replace params from input data to url
     // e.g. /users/:id -> /users/1
     replaceUrlParams()
