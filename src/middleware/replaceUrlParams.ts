@@ -25,7 +25,7 @@ export function replaceUrlParams(
 
     if (params) {
       let url = ctx.config.url;
-      const input = ctx.parsedInput;
+      const input = ctx.config.data;
       for (const param of params) {
         const key = param.slice(1);
         if (isObject(input)) {
@@ -33,7 +33,7 @@ export function replaceUrlParams(
           if (typeof value === 'number' || typeof value === 'string') {
             url = url.replace(param, value.toString().replace(/\s/g, ''));
             // remove path params
-            (excludePathParams === true) && delete input[key];
+            excludePathParams === true && delete input[key];
           }
         } else {
           console.warn(`Bad params ${key} data.`);

@@ -6,7 +6,13 @@
   "sideEffects": false,
   "author": "mino",
   "repository": "minosss/api",
-  "keywords": ["api", "client", "rest", "http", "https"],
+  "keywords": [
+    "api",
+    "client",
+    "rest",
+    "http",
+    "https"
+  ],
   "license": "MIT",
   "exports": {
     ".": {
@@ -16,13 +22,19 @@
     "./middleware": {
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"
+    },
+    "./nextjs": {
+      "types": "./dist/nextjs.d.ts",
+      "default": "./dist/nextjs.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "clean": "rm -rf node_modules dist",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && publint --strict",
-    "prepublishOnly": "bun run build",
+    "prepublishOnly": "npm run build",
     "release": "np",
     "test": "bun test --coverage",
     "lint": "biome lint",
@@ -34,23 +46,29 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "@size-limit/preset-small-lib": "^11.1.4",
+    "@size-limit/preset-small-lib": "^11.1.6",
     "@types/bun": "^1.1.8",
     "@types/node": "^22.5.4",
-    "publint": "^0.2.10",
-    "typescript": "^5.5.4",
+    "next": "^14.2.14",
     "np": "^10.0.7",
+    "publint": "^0.2.10",
+    "size-limit": "^11.1.6",
+    "typescript": "^5.5.4",
     "zod": "^3.23.8"
   },
   "peerDependencies": {
+    "next": ">=14.0.0",
     "zod": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {
       "optional": true
+    },
+    "next": {
+      "optional": true
     }
   },
-  "packageManager": "bun@1.1.27",
+  "packageManager": "pnpm@9.10.0",
   "engines": {
     "node": ">=18.0.0"
   },

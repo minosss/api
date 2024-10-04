@@ -27,9 +27,18 @@ npm i @yme/api@next
 ```ts
 import { createApi } from '@yme/api';
 
-const api = createApi({
-  http: async (config) => {}
-});
+const api = createApi(
+  async (config, context) => {
+    const { data, method, url } = config;
+    // fetch data from server. e.g.
+    const response = await fetch(url, {
+      method,
+      body: JSON.stringify(config.data)
+    });
+    return response.json();
+  },
+  {}
+);
 
 interface User {
   id: string;
@@ -64,15 +73,17 @@ With middlewares:
 ```ts
 import { logger, replaceUrlParams } from '@yme/api/middleware';
 
-const api = createApi({
-  http: async (config) => {},
-  middlewares: [
-    logger(),
-    // replace params from input data to url
-    // e.g. /users/:id -> /users/1
-    replaceUrlParams()
-  ],
-});
+const api = createApi(
+  async (config) => {},
+  {
+    middlewares: [
+      logger(),
+      // replace params from input data to url
+      // e.g. /users/:id -> /users/1
+      replaceUrlParams()
+    ],
+  },
+);
 
 const getUser = api.get('/users/:id')
   .validator(z.object({

@@ -20,107 +20,28 @@ export type InferOutput<S extends Transform> = S extends IfInstalled<z.ZodType>
     ? O
     : never;
 
-export interface GenericRequestConfig {
+export interface Context {
+  config: ActionConfig;
+  dispatch: () => Promise<any>;
+  error?: Error;
+  data: any;
+  finalized: boolean;
+}
+
+export interface ActionConfig {
+  data?: unknown;
   method: string;
   url: string;
-  params?: any;
-  data?: any;
 }
 
-export type HttpRequest = <C extends GenericRequestConfig>(
-  config: C,
+export type Action<C extends Context, I = unknown, O = unknown> = (
+  config: C['config'] & { data: I },
+  c: C,
+) => Promise<O>;
+
+export type MiddlewareFn<C extends Context = Context> = (
+  ctx: C,
+  next: () => Promise<any>,
 ) => Promise<any>;
 
-export type HttpConfig<H extends AnyHttpRequest> = Parameters<H>[0];
-
-export type AnyHttpRequest = (...args: any[]) => Promise<any>;
-
-export interface RequestDef<I, O, M, U, S, T, H extends AnyHttpRequest> {
-  input: I;
-  output: O;
-  method: M;
-  url: U;
-  schema?: S;
-  transform?: T;
-  http: H;
-}
-
-export type AnyRequestDef = RequestDef<any, any, any, any, any, any, any>;
-
-export type RequestConfig<H extends AnyHttpRequest> = Omit<
-  HttpConfig<H>,
-  keyof GenericRequestConfig
->;
-
-export interface Request<Def extends AnyRequestDef> {
-  _def: Def;
-
-  (input: Def['input']): Promise<Def['output']>;
-  (
-    input: Def['input'],
-    requestConfig: RequestConfig<Def['http']>,
-  ): Promise<Def['output']>;
-
-  validator<OS extends Transform = Transform<Def['input'], unknown>>(
-    schema: OS,
-  ): Request<
-    RequestDef<
-      InferInput<OS>,
-      Def['output'],
-      Def['method'],
-      Def['url'],
-      OS,
-      Def['transform'],
-      Def['http']
-    >
-  >;
-
-  selector<OT extends Transform = Transform<Def['output'], unknown>>(
-    transform: OT,
-  ): Request<
-    RequestDef<
-      Def['input'],
-      InferOutput<OT>,
-      Def['method'],
-      Def['url'],
-      Def['schema'],
-      OT,
-      Def['http']
-    >
-  >;
-
-  T<O = Def['output']>(): Request<
-    RequestDef<
-      Def['input'],
-      O,
-      Def['method'],
-      Def['url'],
-      Def['schema'],
-      Def['transform'],
-      Def['http']
-    >
-  >;
-  T<I = Def['input'], O = Def['output']>(): Request<
-    RequestDef<
-      I,
-      O,
-      Def['method'],
-      Def['url'],
-      Def['schema'],
-      Def['transform'],
-      Def['http']
-    >
-  >;
-}
-
-export interface MiddlewareContext<H extends AnyHttpRequest = AnyHttpRequest> {
-  http: H;
-  config: HttpConfig<H>;
-  parsedInput: unknown;
-  output?: unknown;
-}
-
-export type MiddlewareFn<H extends AnyHttpRequest = AnyHttpRequest> = (
-  ctx: MiddlewareContext<H>,
-  next: () => Promise<void>,
-) => Promise<void>;
+export type AnyPromiseFn = (...args: any[]) => Promise<any>;

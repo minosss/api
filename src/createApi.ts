@@ -1,157 +1,171 @@
+import { compose } from './compose.js';
 import { ApiError } from './error.js';
 import type {
-  AnyHttpRequest,
-  AnyRequestDef,
+  InferInput,
+  InferOutput,
   MiddlewareFn,
-  Request,
-  RequestConfig,
-  RequestDef,
+  Transform,
+  ActionConfig,
+  Context,
+  Action,
+  AnyPromiseFn,
 } from './types.js';
 import { validate } from './validate.js';
 
-const methods = ['get', 'post', 'put', 'delete', 'patch'] as const;
 
-export interface Api<H extends AnyHttpRequest> {
-  http: H;
-  use(middleware: MiddlewareFn<H>): Api<H>;
-  get<P extends string>(
-    url: P,
-    requestConfig?: RequestConfig<H>,
-  ): Request<RequestDef<void, any, 'GET', P, undefined, undefined, H>>;
-  post<P extends string>(
-    url: P,
-    requestConfig?: RequestConfig<H>,
-  ): Request<RequestDef<void, any, 'POST', P, undefined, undefined, H>>;
-  put<P extends string>(
-    url: P,
-    requestConfig?: RequestConfig<H>,
-  ): Request<RequestDef<void, any, 'PUT', P, undefined, undefined, H>>;
-  delete<P extends string>(
-    url: P,
-    requestConfig?: RequestConfig<H>,
-  ): Request<RequestDef<void, any, 'DELETE', P, undefined, undefined, H>>;
-  patch<P extends string>(
-    url: P,
-    requestConfig?: RequestConfig<H>,
-  ): Request<RequestDef<void, any, 'PATCH', P, undefined, undefined, H>>;
+export interface Handler<
+  I,
+  O,
+  M extends string,
+  U extends string,
+  S extends Transform,
+  T extends Transform,
+  A extends AnyPromiseFn,
+> {
+  (input: I): Promise<O>;
+  (
+    input: I,
+    actionConfig: Omit<Parameters<A>[0], keyof ActionConfig>,
+  ): Promise<O>;
+
+  validator<OS extends Transform = Transform<I, unknown>>(
+    schema: OS,
+  ): Handler<InferInput<OS>, O, M, U, OS, T, A>;
+  selector<OT extends Transform = Transform<O, unknown>>(
+    transform: OT,
+  ): Handler<I, InferOutput<OT>, M, U, S, OT, A>;
+  T<OO = O>(): Handler<I, OO, M, U, S, T, A>;
+  T<OI = I, OO = O>(): Handler<OI, OO, M, U, S, T, A>;
 }
 
-export function createApi<H extends AnyHttpRequest>(options: {
-  http: H;
-  middlewares?: MiddlewareFn<H>[];
-}): Api<H> {
-  const { http, middlewares = [] } = options;
-
-  const api: any = {
-    http,
-    use: (middleware: MiddlewareFn<H>) => {
-      return createApi({
-        http,
-        middlewares: [...middlewares, middleware],
-      });
-    },
-  };
-
-  for (const method of methods) {
-    api[method] = (url: string, requestConfig?: Record<string, any>) => {
-      return buildRequest({
-        ...requestConfig,
-        http,
-        middlewares,
-        method: method.toUpperCase(), // get -> GET
-        url,
-      });
-    };
-  }
-
-  return api;
-}
-
-function buildRequest<Def extends AnyRequestDef>(options: {
-  method: Def['method'];
-  url: Def['url'];
-  schema?: Def['schema'];
-  transform?: Def['transform'];
-  http: Def['http'];
-  middlewares: MiddlewareFn<Def['http']>[];
-}): Request<Def> {
-  async function request(data: any, requestConfig: any = {}) {
-    const method = options.method;
-    const dataKey = method === 'GET' ? 'params' : 'data';
-
-    let input = data;
-    const url = options.url;
-
+export function createHandler<
+  I,
+  O,
+  M extends string,
+  U extends string,
+  S extends Transform,
+  T extends Transform,
+  A extends AnyPromiseFn,
+>(opts: {
+  method: M;
+  url: U;
+  schema?: S;
+  transform?: T;
+  action?: A;
+  middlewares?: MiddlewareFn<any>[];
+  onError?: (error: Error) => Promise<any>;
+}): Handler<I, O, M, U, S, T, A> {
+  async function handler(input: I, actionConfig = {}) {
+    // input
+    let data = input;
     try {
-      if (typeof options.schema !== 'undefined') {
-        input = await validate(options.schema, input);
+      if (opts.schema != null) {
+        data = await validate(opts.schema, data);
       }
     } catch (error) {
       throw ApiError.from(error, ApiError.ERR_BAD_INPUT);
     }
 
     const config = {
-      ...requestConfig,
-      [dataKey]: input,
-      method,
-      url,
+      ...actionConfig,
+      method: opts.method,
+      url: opts.url,
+      data,
     };
 
-    // TODO better middlewares
-    const ctx = {
-      http: options.http,
+    const c: Context = {
       config,
-      parsedInput: input,
-      output: undefined,
+      dispatch: async () => opts.action?.(config, c),
+      data: undefined,
+      finalized: false,
     };
 
+    let output: any;
     try {
-      const middlewares: MiddlewareFn<Def['http']>[] = [
-        ...options.middlewares,
-        async (ctx, next) => {
-          const output = await options.http(config);
-          ctx.output = output;
-          return next();
-        },
-      ];
-      const executeMiddleware = async (i = 0) => {
-        const fn = middlewares[i];
-        if (fn) {
-          await fn(ctx, () => executeMiddleware(i + 1));
-        }
-      };
-
-      await executeMiddleware();
+      const ctx = await compose<Context>(
+        [...(opts.middlewares ?? []), async (c) => c.dispatch()],
+        opts.onError,
+      )(c);
+      output = ctx.data;
     } catch (error) {
       throw ApiError.from(error, ApiError.ERR_BAD_HTTP);
     }
 
     try {
-      if (typeof options.transform === 'function') {
-        ctx.output = await validate(options.transform, ctx.output);
+      if (opts.transform) {
+        output = await validate(opts.transform, output);
       }
     } catch (error) {
       throw ApiError.from(error, ApiError.ERR_BAD_OUTPUT);
     }
 
-    return ctx.output;
+    return output;
   }
 
-  // override config
-  request.validator = (schema: any) =>
-    buildRequest({
-      ...options,
+  handler.validator = (schema: any) =>
+    createHandler({
+      ...opts,
       schema,
     });
-  request.selector = (transform: any) =>
-    buildRequest({
-      ...options,
+  handler.selector = (transform: any) =>
+    createHandler({
+      ...opts,
       transform,
     });
-  request.T = () =>
-    buildRequest({
-      ...options,
+  handler.T = () =>
+    createHandler({
+      ...opts,
     });
 
-  return request as any;
+  return handler as any;
+}
+
+export interface Api<C extends Context> {
+  use: (middleware: MiddlewareFn<C>) => Api<C>;
+  get: <U extends string>(
+    url: U,
+  ) => Handler<void, unknown, 'GET', U, never, never, Action<C>>;
+  post: <U extends string>(
+    url: U,
+  ) => Handler<void, unknown, 'POST', U, never, never, Action<C>>;
+  put: <U extends string>(
+    url: U,
+  ) => Handler<void, unknown, 'PUT', U, never, never, Action<C>>;
+  patch: <U extends string>(
+    url: U,
+  ) => Handler<void, unknown, 'PATCH', U, never, never, Action<C>>;
+  delete: <U extends string>(
+    url: U,
+  ) => Handler<void, unknown, 'DELETE', U, never, never, Action<C>>;
+}
+
+export function createApi<C extends Context>(
+  action: Action<C>,
+  opts: {
+    middlewares?: MiddlewareFn<C>[];
+    onError?: (error: Error) => Promise<any>;
+  } = {},
+): Api<C> {
+  const api: any = {
+    use: (middleware: MiddlewareFn<C>) => {
+      return createApi(action, {
+        ...opts,
+        middlewares: [...(opts.middlewares ?? []), middleware],
+      });
+    },
+  };
+  const allMethods = ['get', 'post', 'put', 'patch', 'delete'] as const;
+  for (const method of allMethods) {
+    api[method] = (url: string) => {
+      return createHandler({
+        method: method.toUpperCase(),
+        url,
+        action,
+        middlewares: opts.middlewares,
+        onError: opts.onError,
+      });
+    };
+  }
+
+  return api;
 }

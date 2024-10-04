@@ -1,12 +1,12 @@
 // Inspired by hono/logger
-import { MiddlewareFn } from '../types.js';
+import type { MiddlewareFn } from '../types.js';
 
 type LoggerFn = (message: string, ...others: string[]) => void;
 
 const prefixSet = {
   Incoming: '<--',
   Outgoing: '-->',
-}
+};
 
 const now = () => performance.now();
 
@@ -20,13 +20,13 @@ function log(
   prefix: string,
   method: string,
   url: string,
-  // TODO support status
   status?: number,
-  time?: string
+  time?: string,
 ) {
-  const message = prefix === prefixSet.Incoming
-    ? `${prefix} ${method} ${url}`
-    : `${prefix} ${method} ${url} ${status} ${time}`;
+  const message =
+    prefix === prefixSet.Incoming
+      ? `${prefix} ${method} ${url}`
+      : `${prefix} ${method} ${url} ${status} ${time}`;
   fn(message);
 }
 
@@ -39,6 +39,13 @@ export function logger(fn: LoggerFn = console.log): MiddlewareFn {
 
     await next();
 
-    log(fn, prefixSet.Incoming, method, url, 0, time(start));
-  }
+    log(
+      fn,
+      prefixSet.Incoming,
+      method,
+      url,
+      (ctx as any).res?.status ?? 0,
+      time(start),
+    );
+  };
 }
