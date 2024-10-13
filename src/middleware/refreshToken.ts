@@ -1,22 +1,24 @@
-import type { Context, MiddlewareFn } from '../types.js';
+import type { AnyAsyncFn, Middleware } from '../types.js';
 
 /**
  * refresh token middleware, token expired will be refreshed automatically
  */
 export function refreshToken<
-  C extends Context,
-  R extends (...args: any[]) => Promise<any>,
+  R extends AnyAsyncFn,
 >(options: {
   /** refresh token function, should return a promise, do replace token of http(config) here */
   refreshTokenFn: R;
   /** retry before refreshing, you should modify the config before retry */
-  beforeRetry?: (
+  beforeRetry: (
     refreshResult: Awaited<ReturnType<R>>,
-    context: C,
-  ) => C | Promise<C>;
+    context: unknown,
+  ) => Promise<any>;
   /** should refresh or not */
-  shouldRefresh: (error: any, context: C) => boolean;
-}): MiddlewareFn<C> {
+  shouldRefresh: (error: unknown, context: unknown) => boolean;
+}): Middleware<{
+  output: unknown;
+  action: AnyAsyncFn;
+}, any> {
   let refreshing: Promise<any> | null = null;
 
   return async (ctx, next) => {
@@ -42,9 +44,9 @@ export function refreshToken<
       return refreshing
         .catch((error) => Promise.reject(error))
         .then((value) => options.beforeRetry?.(value, ctx))
-        .then(() => ctx.dispatch())
-        .then((output) => {
-          ctx.data = output;
+        .then(() => {
+          ctx.output = undefined;
+          return ctx.action(ctx);
         })
         .finally(() => {
           refreshing = null;

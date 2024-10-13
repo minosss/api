@@ -1,4 +1,4 @@
-import type { MiddlewareFn } from '../types.js';
+import type { Middleware } from '../types.js';
 
 function isObject(value: any): value is Record<string, any> {
   return typeof value === 'object' && !Array.isArray(value) && value !== null;
@@ -17,7 +17,12 @@ export interface ReplaceUrlParamsOptions {
  */
 export function replaceUrlParams(
   options: ReplaceUrlParamsOptions = {},
-): MiddlewareFn {
+): Middleware<{
+  config: {
+    url: string;
+  };
+  input: unknown;
+}, any> {
   return async (ctx, next) => {
     const { excludePathParams = true } = options;
     // replace url params with input
@@ -25,7 +30,7 @@ export function replaceUrlParams(
 
     if (params) {
       let url = ctx.config.url;
-      const input = ctx.config.data;
+      const input = ctx.input;
       for (const param of params) {
         const key = param.slice(1);
         if (isObject(input)) {

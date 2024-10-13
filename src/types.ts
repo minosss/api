@@ -20,28 +20,15 @@ export type InferOutput<S extends Transform> = S extends IfInstalled<z.ZodType>
     ? O
     : never;
 
-export interface Context {
-  config: ActionConfig;
-  dispatch: () => Promise<any>;
-  error?: Error;
-  data: any;
-  finalized: boolean;
+export type AnyAsyncFn = (...args: any[]) => Promise<any>;
+
+export type Env = {
+  Context?: object;
 }
 
-export interface ActionConfig {
-  data?: unknown;
-  method: string;
-  url: string;
-}
+export type ExtractConfig<E extends Env> = E['Context'] extends { config: infer R } ? R & {} : object;
 
-export type Action<C extends Context, I = unknown, O = unknown> = (
-  config: C['config'] & { data: I },
+export type Middleware<C extends object, _NextCtx extends object> = (
   c: C,
-) => Promise<O>;
-
-export type MiddlewareFn<C extends Context = Context> = (
-  ctx: C,
-  next: () => Promise<any>,
+  next: <NC extends object>(nextCtx?: NC) => Promise<any>,
 ) => Promise<any>;
-
-export type AnyPromiseFn = (...args: any[]) => Promise<any>;

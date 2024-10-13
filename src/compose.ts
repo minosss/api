@@ -1,10 +1,14 @@
-import type { MiddlewareFn, Context } from './types.js';
-// instead of hono/compose
-export function compose<C extends Context>(
-  middlewares: MiddlewareFn<C>[],
-  onError?: (error: Error, ctx: C) => Promise<any>,
-): (c: C) => Promise<C> {
-  return function composed(ctx: C) {
+import type { Middleware } from './types.js';
+
+interface ComposeContext {
+  output: unknown;
+}
+
+export function compose<C extends ComposeContext>(
+  middlewares: Middleware<any, any>[],
+  onError?: (c: C) => Promise<any>,
+) {
+  return function composed(ctx: C, next?: Middleware<any, any>) {
     let index = -1;
     return dispatch(0);
 
@@ -14,17 +18,26 @@ export function compose<C extends Context>(
       }
       index = i;
 
-      let data: unknown;
+      let output: any;
+      let handler: any;
       let isError = false;
-      const handler = middlewares[i];
+
+      if (middlewares[i]) {
+        handler = middlewares[i];
+      } else {
+        handler = (index === middlewares.length && next) || undefined;
+      }
 
       if (handler) {
         try {
-          data = await handler(ctx, () => dispatch(i + 1));
+          output = await handler(
+            ctx,
+            () => dispatch(i + 1),
+          );
         } catch (error) {
           if (error instanceof Error && onError) {
-            ctx.error = error;
-            data = await onError(error, ctx);
+            (ctx as any).error = error;
+            output = await onError(ctx);
             isError = true;
           } else {
             throw error;
@@ -32,9 +45,8 @@ export function compose<C extends Context>(
         }
       }
 
-      if (data && (ctx.finalized === false || isError)) {
-        ctx.data = data;
-        ctx.finalized = true;
+      if (output !== undefined && (ctx.output === undefined || isError)) {
+        ctx.output = output;
       }
 
       return ctx;
