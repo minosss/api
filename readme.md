@@ -36,7 +36,8 @@ const api = new ApiClient({
     return response.json();
   },
   middlewares: [
-    logger,
+    logger(),
+    // replace route params from input. e.g. /users/:id to /users/1
     replaceUrlParams(),
   ],
   // handle error and return fallback data
