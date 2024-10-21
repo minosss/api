@@ -32,3 +32,7 @@ export type Middleware<C extends object, _NextCtx extends object> = (
   c: C,
   next: <NC extends object>(nextCtx?: NC) => Promise<any>,
 ) => Promise<any>;
+
+export type Prettify<T> = {
+	[K in keyof T]: T[K];
+} & {};

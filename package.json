@@ -11,7 +11,8 @@
     "client",
     "rest",
     "http",
-    "https"
+    "https",
+    "nextjs"
   ],
   "license": "MIT",
   "exports": {
@@ -23,9 +24,13 @@
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"
     },
-    "./nextjs": {
-      "types": "./dist/nextjs.d.ts",
-      "default": "./dist/nextjs.js"
+    "./nextjs-request": {
+      "types": "./dist/nextjs-request.d.ts",
+      "default": "./dist/nextjs-request.js"
+    },
+    "./nextjs-action": {
+      "types": "./dist/nextjs-action.d.ts",
+      "default": "./dist/nextjs-action.js"
     }
   },
   "files": [
@@ -77,7 +82,10 @@
       "path": "dist/index.js",
       "limit": "1kb"
     }, {
-      "path": "dist/nextjs.js",
+      "path": "dist/nextjs-request.js",
+      "limit": "1kb"
+    }, {
+      "path": "dist/nextjs-action.js",
       "limit": "1kb"
     }
   ]

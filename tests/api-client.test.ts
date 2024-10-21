@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from 'bun:test';
-import { ApiClient } from '../src/api.js';
+import { ApiClient } from '../src/api-client.js';
 
 describe('ApiClient', () => {
   const action = jest.fn(

@@ -30,12 +30,15 @@ function log(
   fn(message);
 }
 
-export function logger(fn: LoggerFn = console.log): Middleware<{
-  config: {
-    method: string;
-    url: string;
-  }
-}, any> {
+export function logger(fn: LoggerFn = console.log): Middleware<
+  {
+    config: {
+      method: string;
+      url: string;
+    };
+  },
+  any
+> {
   return async (ctx, next) => {
     const { method, url } = ctx.config ?? { method: 'unknown', url: 'unknown' };
     const start = now();
@@ -49,7 +52,7 @@ export function logger(fn: LoggerFn = console.log): Middleware<{
       prefixSet.Incoming,
       method,
       url,
-      0,
+      (ctx as unknown as { status?: number }).status ?? 0,
       time(start),
     );
   };
