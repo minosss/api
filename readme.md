@@ -15,7 +15,7 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 - **Middlewares**: Support middlewares.
 
 ```
-[input] -> [validator, middlewares, action, selector] -> [output]
+[input] -> [middlewares, action] -> [output]
 ```
 
 ## Quick Start
