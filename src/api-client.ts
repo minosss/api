@@ -75,6 +75,21 @@ type RequestBuilder<E extends Env, M extends string> = <U extends string>(
   initialConfig?: object,
 ) => RequestHandler<ExtractParams<U>, unknown, M, U, never, never, E>;
 
+/**
+ * define a client for an API
+ *
+ * @example
+ *
+ * const ac = new ApiClient({});
+ *
+ * const createUser = ac.post('/users')
+ *   .validator(z.object({
+ *     name: z.string().min(1),
+ *   }))
+ *   .T<UserType>()
+ *   .selector((user) => user.id);
+ * const userId = await createUser({ name: 'Alice' });
+ */
 export class ApiClient<E extends Env> extends ApiBase<E> {
   #action: AnyAsyncFn;
 
@@ -103,7 +118,7 @@ export class ApiClient<E extends Env> extends ApiBase<E> {
             schema: undefined,
             transform: undefined,
           },
-          this.createHandler,
+          this.createHandler.bind(this),
           {
             validator: 'schema',
             selector: 'transform',

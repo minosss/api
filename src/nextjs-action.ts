@@ -95,9 +95,9 @@ const noop = async () => null;
 
 /**
  * @example
- * const qa = new ApiAction({ ... });
+ * const aa = new ApiAction({ ... });
  *
- * const createUser = qa
+ * const createUser = aa
  *   .post({ ... })
  *   .validator(z.object({
  *     email: z.string().email(),
@@ -108,7 +108,7 @@ const noop = async () => null;
  *   })
  *
  * // bind args
- * const updateUser = qs
+ * const updateUser = aa
  *   .post({ ... })
  *   .validator(z.object({
  *     email: z.string().email(),
@@ -137,7 +137,7 @@ export class ApiAction<E extends Env> extends ApiBase<E> {
         bindArgsSchema: undefined,
         action: noop,
       },
-      this.createHandler,
+      this.createHandler.bind(this),
       {
         validator: 'schema',
         action: 'action',

@@ -47,10 +47,7 @@ interface RequestHandler<
   E extends Env,
 > {
   // todo extract route params from url
-  (
-    req: NextRequest,
-    route: { params: InferOutput<R> },
-  ): Promise<Response>;
+  (req: NextRequest, route: { params: InferOutput<R> }): Promise<Response>;
 
   validator<OS extends Transform>(
     schema: OS,
@@ -85,6 +82,28 @@ interface RequestBuilder<E extends Env, M extends string> {
 
 export const noop = async () => null;
 
+/**
+ * define a nextjs request handler
+ *
+ * @example
+ *
+ * const ar = new ApiRequest({});
+ *
+ * export const POST = ar.post()
+ *   .validator(z.object({ name: z.string() }))
+ *   .action(async (config, ctx) => {
+ *     // config.input.name
+ *   })
+ *
+ * // app/api/users/[userId]/route.ts
+ * export const POST = ar.post()
+ *   .validator(z.object({ name: z.string() }))
+ *   .routeParams(z.object({ userId: z.string() }))
+ *   .action(async (config, ctx) => {
+ *     // config.input.name
+ *     // config.routeParams.userId
+ *   });
+ */
 export class ApiRequest<E extends Env> extends ApiBase<E> {
   get!: RequestBuilder<E, 'GET'>;
   post!: RequestBuilder<E, 'POST'>;
@@ -111,7 +130,7 @@ export class ApiRequest<E extends Env> extends ApiBase<E> {
             routeParamsSchema: undefined,
             action: noop,
           },
-          this.createHandler,
+          this.createHandler.bind(this),
           {
             validator: 'schema',
             routeParams: 'routeParamsSchema',
