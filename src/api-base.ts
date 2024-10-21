@@ -26,11 +26,16 @@ export class ApiBase<E extends Env = {}> {
   ) {
     const handler = createHandler(handlerConfig);
     for (const key in overrides) {
-      handler[key] = (value) =>
-        createHandler({
-          ...handlerConfig,
-          ...(overrides[key] ? { [overrides[key]]: value } : {}),
-        });
+      handler[key] = (value: unknown) =>
+        // should create a new override handler with the new value
+        this.createOverrideHandler(
+          {
+            ...handlerConfig,
+            ...(overrides[key] ? { [overrides[key]]: value } : {}),
+          },
+          createHandler,
+          overrides,
+        );
     }
     return handler;
   }
