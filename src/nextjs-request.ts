@@ -35,7 +35,10 @@ export type ApiRequestContext<E extends Env> = ApiContext<E> & {
   action: AnyAsyncFn;
 };
 
-export type ApiRequestOptions<E extends Env> = ApiOptions<E> & {};
+export type ApiRequestOptions<E extends Env> = ApiOptions<
+  E,
+  ApiRequestContext<E>
+> & {};
 
 interface RequestHandler<
   I,
@@ -104,7 +107,10 @@ export const noop = async () => null;
  *     // config.routeParams.userId
  *   });
  */
-export class ApiRequest<E extends Env> extends ApiBase<E> {
+export class ApiRequest<E extends Env> extends ApiBase<
+  E,
+  ApiRequestContext<E>
+> {
   get!: RequestBuilder<E, 'GET'>;
   post!: RequestBuilder<E, 'POST'>;
   put!: RequestBuilder<E, 'PUT'>;
@@ -169,13 +175,14 @@ export class ApiRequest<E extends Env> extends ApiBase<E> {
         [
           // setup request context
           async (c, next) => {
+            const routeParams = route.params ?? {};
             const config = {
               // todo: validate method and url?
               method: req.method,
               url: req.url,
               routeParams: handlerOpts.routeParamsSchema
-                ? await validate(handlerOpts.routeParamsSchema, route.params)
-                : route.params,
+                ? await validate(handlerOpts.routeParamsSchema, routeParams)
+                : routeParams,
             };
             c.rawRequest = req;
             c.action = handlerOpts.action;
@@ -193,8 +200,8 @@ export class ApiRequest<E extends Env> extends ApiBase<E> {
         this.onError,
       )(
         {
-          output: undefined,
-        },
+          // pass empty context and setup in the first middleware
+        } as any,
         async (c) => {
           const output = await c.action(
             {

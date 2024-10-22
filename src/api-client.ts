@@ -16,7 +16,7 @@ type ApiClientAction<E extends Env> = (
   c: ApiClientContext<E>,
 ) => Promise<any>;
 
-export interface ApiClientOptions<E extends Env> extends ApiOptions<E> {
+export interface ApiClientOptions<E extends Env> extends ApiOptions<E, ApiClientContext<E>> {
   action: ApiClientAction<E>;
 }
 
@@ -90,7 +90,7 @@ type RequestBuilder<E extends Env, M extends string> = <U extends string>(
  *   .selector((user) => user.id);
  * const userId = await createUser({ name: 'Alice' });
  */
-export class ApiClient<E extends Env> extends ApiBase<E> {
+export class ApiClient<E extends Env> extends ApiBase<E, ApiClientContext<E>> {
   #action: AnyAsyncFn;
 
   get!: RequestBuilder<E, 'GET'>;
@@ -151,18 +151,23 @@ export class ApiClient<E extends Env> extends ApiBase<E> {
           ...this.middlewares,
         ],
         this.onError,
-      )({ output: undefined }, async (c) => {
-        const output = await c.action(
-          {
-            ...c.config,
-            input: c.input,
-          },
-          c,
-        );
-        return handlerOpts.transform
-          ? await validate(handlerOpts.transform, output)
-          : output;
-      });
+      )(
+        {
+          // pass empty context and setup in the first middleware
+        } as any,
+        async (c) => {
+          const output = await c.action(
+            {
+              ...c.config,
+              input: c.input,
+            },
+            c,
+          );
+          return handlerOpts.transform
+            ? await validate(handlerOpts.transform, output)
+            : output;
+        },
+      );
 
       return context.output;
     };

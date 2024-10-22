@@ -2,18 +2,24 @@ import type { Env, Middleware } from './types.js';
 
 export type ApiContext<E extends Env> = {} & E['Context'];
 
-export interface ApiOptions<E extends Env> {
-  onError?: (c: ApiContext<E>) => Promise<any>;
+export interface ApiOptions<
+  E extends Env,
+  C extends ApiContext<E> = ApiContext<E>,
+> {
+  onError?: (c: C) => Promise<any>;
   middlewares?: Middleware<any, any>[];
   mergeConfig?: (target: object, source: object) => object;
 }
 
-export class ApiBase<E extends Env = {}> {
+export class ApiBase<
+  E extends Env = {},
+  C extends ApiContext<E> = ApiContext<E>,
+> {
   protected middlewares: Middleware<any, any>[];
-  protected onError?: (c: ApiContext<E>) => Promise<any>;
+  protected onError?: (c: C) => Promise<any>;
   protected mergeConfig: (target: object, source: object) => object;
 
-  constructor(opts: ApiOptions<E>) {
+  constructor(opts: ApiOptions<E, C>) {
     this.middlewares = opts?.middlewares ?? [];
     this.onError = opts.onError;
     this.mergeConfig = opts.mergeConfig ?? Object.assign;

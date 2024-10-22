@@ -103,7 +103,7 @@ export type ApiActionContext<E extends Env> = {
   action: AnyAsyncFn;
 } & ApiContext<E>;
 
-export type ApiActionOptions<E extends Env> = ApiOptions<E> & {};
+export type ApiActionOptions<E extends Env> = ApiOptions<E, ApiActionContext<E>> & {};
 
 const noop = async () => null;
 
@@ -133,7 +133,7 @@ const noop = async () => null;
  *   });
  * const updateUserWithId = updateUser.bind(null, userId);
  */
-export class ApiAction<E extends Env> extends ApiBase<E> {
+export class ApiAction<E extends Env> extends ApiBase<E, ApiActionContext<E>> {
   constructor(opts: ApiActionOptions<E>) {
     super({
       mergeConfig: opts.mergeConfig,
@@ -228,17 +228,22 @@ export class ApiAction<E extends Env> extends ApiBase<E> {
           ...this.middlewares,
         ],
         this.onError,
-      )({ output: undefined }, async (c) => {
-        const output = await c.action(
-          {
-            ...c.config,
-            input: c.input,
-          },
-          c,
-        );
+      )(
+        {
+          // pass empty context and setup in the first middleware
+        } as any,
+        async (c) => {
+          const output = await c.action(
+            {
+              ...c.config,
+              input: c.input,
+            },
+            c,
+          );
 
-        return output;
-      });
+          return output;
+        },
+      );
 
       return context.output;
     };
