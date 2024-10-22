@@ -6,6 +6,7 @@ import type {
   InferInput,
   InferOutput,
   Middleware,
+  Prettify,
   Transform,
 } from './types.js';
 import { validate } from './validate.js';
@@ -64,19 +65,32 @@ type Handler<I, O, B extends Transform[]> = B extends [] // if bindArgs is empty
               ) => Promise<O>
             : never;
 
-type RequestHandler<I, O, S extends Transform, B extends Transform[]> = Handler<
+type RequestHandler<
   I,
   O,
-  B
-> & {
+  S extends Transform,
+  B extends Transform[],
+  E extends Env,
+> = Handler<I, O, B> & {
   validator<OS extends Transform>(
     schema: OS,
-  ): RequestHandler<InferInput<OS>, O, OS, B>;
+  ): RequestHandler<InferInput<OS>, O, OS, B, E>;
 
-  bindArgs<AA extends [Transform]>(args: AA): RequestHandler<I, O, S, AA>;
+  bindArgs<AA extends [Transform]>(args: AA): RequestHandler<I, O, S, AA, E>;
   bindArgs<AA extends [Transform, Transform]>(
     bindArgsSchema: AA,
-  ): RequestHandler<I, O, S, AA>;
+  ): RequestHandler<I, O, S, AA, E>;
+
+  action<OO = O>(
+    action: (
+      config: Prettify<
+        ApiActionContext<E>['config'] & {
+          input: I;
+        }
+      >,
+      ctx: ApiActionContext<E>,
+    ) => Promise<OO>,
+  ): RequestHandler<I, OO, S, B, E>;
 };
 
 export type ApiActionContext<E extends Env> = {
@@ -143,7 +157,7 @@ export class ApiAction<E extends Env> extends ApiBase<E> {
         action: 'action',
         bindArgs: 'bindArgsSchema',
       },
-    ) as RequestHandler<unknown, unknown, never, []>;
+    ) as RequestHandler<unknown, unknown, never, [], E>;
   }
 
   use<NC extends object>(middleware: Middleware<ApiActionContext<E>, NC>) {

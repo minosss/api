@@ -47,7 +47,7 @@ interface RequestHandler<
   E extends Env,
 > {
   // todo extract route params from url
-  (req: NextRequest, route: { params: InferOutput<R> }): Promise<Response>;
+  (req: NextRequest, route?: { params: InferOutput<R> }): Promise<Response>;
 
   validator<OS extends Transform>(
     schema: OS,
@@ -149,12 +149,20 @@ export class ApiRequest<E extends Env> extends ApiBase<E> {
   }
 
   private createHandler(handlerOpts: ApiRequestHandlerOptions) {
-    return async (req: NextRequest, route: { params: object }) => {
+    return async (
+      req: NextRequest,
+      route: { params: object } = { params: {} },
+    ) => {
       let input: any;
-      if (req.headers.get('content-type') === 'application/json') {
-        if (req.headers.get('content-length') !== '0') {
-          input = await req.json();
-        }
+      if (
+        // ? req.headers['content-type'] is not available in NextRequest
+        (req.headers instanceof Headers &&
+          req.headers.get('content-length') !== '0' &&
+          req.headers.get('content-type') === 'application/json') ||
+        (req.headers['content-length'] !== '0' &&
+          req.headers['content-type'] === 'application/json')
+      ) {
+        input = await req.json();
       }
 
       const context = (await compose(
