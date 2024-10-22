@@ -2,6 +2,7 @@ import type { Middleware } from './types.js';
 
 interface ComposeContext {
   output: unknown;
+  error?: Error;
 }
 
 export function compose<C extends ComposeContext>(
@@ -36,7 +37,7 @@ export function compose<C extends ComposeContext>(
           );
         } catch (error) {
           if (error instanceof Error && onError) {
-            (ctx as any).error = error;
+            ctx.error = error;
             output = await onError(ctx);
             isError = true;
           } else {
