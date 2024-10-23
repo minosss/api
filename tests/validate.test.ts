@@ -42,16 +42,10 @@ describe('validate', () => {
     });
 
     it('should throw an error for invalid transform', async () => {
-      const transform = (data: any) => {
-        if (typeof data === 'string') {
-          return data.toUpperCase();
-        }
-        throw new Error('Invalid data');
-      };
-
+      const transform = {} as any;
       const data = 123;
 
-      expect(validate(transform, data)).rejects.toThrow('Invalid data');
+      expect(validate(transform, data)).rejects.toThrow(/^Invalid transform/);
     });
   });
 })

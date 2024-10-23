@@ -18,7 +18,7 @@ export interface ApiActionHandlerOptions {
   action: AnyAsyncFn;
 }
 
-type Handler<I, O, B extends Transform[]> = B extends [] // if bindArgs is empty
+type Handler<I, O, B extends readonly Transform[]> = B extends [] // if bindArgs is empty
   ? {
       (input: I): Promise<O>;
       (prevState: unknown, formData: FormData): Promise<O>;
@@ -69,7 +69,7 @@ type RequestHandler<
   I,
   O,
   S extends Transform,
-  B extends Transform[],
+  B extends readonly Transform[],
   E extends Env,
 > = Handler<I, O, B> & {
   validator<OS extends Transform>(
@@ -85,6 +85,10 @@ type RequestHandler<
     action: (
       config: Prettify<
         ApiActionContext<E>['config'] & {
+          bindArgs: {
+            // index signature
+            [K in keyof B]: InferOutput<B[K]>;
+          };
           input: I;
         }
       >,
@@ -96,14 +100,17 @@ type RequestHandler<
 export type ApiActionContext<E extends Env> = {
   config: {
     prevState: unknown;
-    bindArgs: unknown[];
+    bindArgs: unknown;
   };
   input: unknown;
   output: unknown;
   action: AnyAsyncFn;
 } & ApiContext<E>;
 
-export type ApiActionOptions<E extends Env> = ApiOptions<E, ApiActionContext<E>> & {};
+export type ApiActionOptions<E extends Env> = ApiOptions<
+  E,
+  ApiActionContext<E>
+> & {};
 
 const noop = async () => null;
 
