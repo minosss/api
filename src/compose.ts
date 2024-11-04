@@ -1,15 +1,22 @@
-import type { Middleware } from './types.js';
+import type { AnyAsyncFn, ApiResponse, Options } from './types.js';
 
-interface ComposeContext {
-  output: unknown;
-  error?: Error;
-}
+export type MiddlewareOptions<Ctx> = Options & {
+  ctx: Ctx;
+  execute: AnyAsyncFn;
+  res: ApiResponse;
+};
 
-export function compose<C extends ComposeContext>(
-  middlewares: Middleware<any, any>[],
-  onError?: (c: C) => Promise<any>,
-) {
-  return function composed(ctx: C, next?: Middleware<any, any>) {
+export type Middleware<Ctx, _NextCtx> = (
+  opts: MiddlewareOptions<Ctx> & {
+    next: <NC extends object>(opts?: { ctx?: NC }) => Promise<any>;
+  },
+) => Promise<any>;
+
+export function compose(middlewares: Middleware<any, any>[]) {
+  return function composed(
+    opts: MiddlewareOptions<any>,
+    next?: (opts: any) => Promise<any>,
+  ) {
     let index = -1;
     return dispatch(0);
 
@@ -19,10 +26,7 @@ export function compose<C extends ComposeContext>(
       }
       index = i;
 
-      let output: any;
-      let handler: any;
-      let isError = false;
-
+      let handler: Middleware<any, any> | undefined;
       if (middlewares[i]) {
         handler = middlewares[i];
       } else {
@@ -30,27 +34,17 @@ export function compose<C extends ComposeContext>(
       }
 
       if (handler) {
-        try {
-          output = await handler(
-            ctx,
-            () => dispatch(i + 1),
-          );
-        } catch (error) {
-          if (error instanceof Error && onError) {
-            ctx.error = error;
-            output = await onError(ctx);
-            isError = true;
-          } else {
-            throw error;
-          }
-        }
+        await handler({
+          ...opts,
+          next: async (nextOpts) => {
+            Object.assign(opts.ctx, nextOpts?.ctx ?? {});
+            await dispatch(i + 1);
+            return opts;
+          },
+        });
       }
 
-      if (output !== undefined && (ctx.output === undefined || isError)) {
-        ctx.output = output;
-      }
-
-      return ctx;
+      return opts;
     }
   };
 }

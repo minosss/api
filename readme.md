@@ -21,16 +21,16 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 ## Quick Start
 
 ```ts
-import { ApiClient } from '@yme/api';
-import { logger, replaceUrlParams } from '@yme/api/middleware';
+import { ApiClient } from "@yme/api";
+import { logger, replaceUrlParams } from "@yme/api/middleware";
 
 const api = new ApiClient({
-  action: async (config, context) => {
+  action: async ({ req }) => {
     // make http request and return data
-    const response = await fetch(config.url, {
-      method: config.method,
-      headers: config.headers,
-      body: JSON.stringify(config.input),
+    const response = await fetch(req.url, {
+      method: req.method,
+      headers: req.headers,
+      body: JSON.stringify(req.input),
     });
     // check status or others
     return response.json();
@@ -40,37 +40,73 @@ const api = new ApiClient({
     // replace route params from input. e.g. /users/:id to /users/1
     replaceUrlParams(),
   ],
-  // handle error and return fallback data
-  onError: async () => {
-    return {
-      message: 'Something went wrong',
-      code: 233,
-    };
-  },
-
-  // how to merge request config, custom for supports deep merge.
-  // mergeConfig: (target, source) => {}
 });
 
-const createUser = api.post('/users', {
-  // initial request config, like headers
-})
+const createUser = api
+  .post("/users", {
+    // initial request config, like headers
+  })
   .validator(
     // input schema
     z.object({
       name: z.string(),
       age: z.number(),
-    }),
+    })
   )
-  .T<{ id: string; name: string; }>()
+  .T<{ id: string; name: string }>()
   // output schema
   .selector((user) => user.id);
 
-const newUserId = await createUser({
-  name: 'Alice',
-  age: 18,
-}, {
-  // request config
+const newUserId = await createUser(
+  {
+    name: "Alice",
+    age: 18,
+  },
+  {
+    // request config
+  }
+);
+```
+
+Use Next.js (Server Action)
+
+```ts
+import { NextAction } from "@yme/api/next/action";
+const api = new NextAction({
+  middlewares: [],
+});
+
+const updateUser = api
+  .post({
+    // ...initial,
+  })
+  .validator(
+    z.object({
+      name: z.string(),
+    })
+  )
+  .bindArgs([z.string()])
+  .action(async ({ req }) => {
+    // { bindArgs: [id], parsedInput: { name }}
+    return true;
+  }); // updateUser(id: string, input: { name: string } | FormData): Promise<boolean>
+
+// use state
+const createUser = api
+  .post()
+  .validator(
+    z.object({
+      name: z.string(),
+    })
+  )
+  .state<{ message: string }>()
+  .action(async ({ req }) => {
+    // { state, parsedInput: { name } }
+    return { message: "ok" };
+  }); // createUser(state: { message: string }, input: { name: string } | FormData): Promise<{ message: string }>
+
+const [state, action, isPending] = useFormState(createUser, {
+  message: "",
 });
 ```
 

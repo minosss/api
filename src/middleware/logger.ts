@@ -1,5 +1,7 @@
 // Inspired by hono/logger
-import type { Middleware } from '../types.js';
+
+import type { Middleware } from '../compose.js';
+import type { HttpRequest } from '../types.js';
 
 type LoggerFn = (message: string, ...others: string[]) => void;
 
@@ -30,30 +32,16 @@ function log(
   fn(message);
 }
 
-export function logger(fn: LoggerFn = console.log): Middleware<
-  {
-    config: {
-      method: string;
-      url: string;
-    };
-  },
-  any
-> {
-  return async (ctx, next) => {
-    const { method, url } = ctx.config ?? { method: 'unknown', url: 'unknown' };
+export function logger(fn: LoggerFn = console.log): Middleware<any, any> {
+  return async (opts) => {
+    const { req } = opts as unknown as { req: HttpRequest };
+    const { method = 'unknown', url = 'unknown' } = req;
     const start = now();
 
     log(fn, prefixSet.Outgoing, method, url);
 
-    await next();
+    await opts.next();
 
-    log(
-      fn,
-      prefixSet.Incoming,
-      method,
-      url,
-      (ctx as unknown as { status?: number }).status ?? 0,
-      time(start),
-    );
+    log(fn, prefixSet.Incoming, method, url, 0, time(start));
   };
 }

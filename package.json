@@ -1,7 +1,7 @@
 {
   "name": "@yme/api",
   "description": "define type-safe API requests simply",
-  "version": "2.0.0-alpha.9",
+  "version": "2.0.0-alpha.10",
   "type": "module",
   "sideEffects": false,
   "author": "mino",
@@ -24,13 +24,9 @@
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"
     },
-    "./nextjs-request": {
-      "types": "./dist/nextjs-request.d.ts",
-      "default": "./dist/nextjs-request.js"
-    },
-    "./nextjs-action": {
-      "types": "./dist/nextjs-action.d.ts",
-      "default": "./dist/nextjs-action.js"
+    "./next/action": {
+      "types": "./dist/next/action.d.ts",
+      "default": "./dist/next/action.js"
     }
   },
   "files": [
@@ -63,7 +59,7 @@
     "zod": "^3.23.8"
   },
   "peerDependencies": {
-    "next": ">=14.0.0",
+    "next": "^14.0.0 || >=15.0.0",
     "zod": ">=3.0.0"
   },
   "peerDependenciesMeta": {
@@ -81,15 +77,11 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "limit": "1kb"
+      "limit": "1 kB"
     },
     {
-      "path": "dist/nextjs-request.js",
-      "limit": "1kb"
-    },
-    {
-      "path": "dist/nextjs-action.js",
-      "limit": "1kb"
+      "path": "dist/next/action.js",
+      "limit": "1.2 kB"
     }
   ]
 }

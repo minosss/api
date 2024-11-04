@@ -1,10 +1,10 @@
 import { describe, expect, it, jest } from 'bun:test';
-import { ApiAction } from '../src/nextjs-action.js';
+import { NextAction } from '../src/next/action.js';
 import { z } from 'zod';
 
 describe('Next.js Action', () => {
   it('create nextjs server action', async () => {
-    const aa = new ApiAction({});
+    const aa = new NextAction({});
 
     const action = aa
       .post()
@@ -13,9 +13,9 @@ describe('Next.js Action', () => {
           name: z.string(),
         }),
       )
-      .action(async ({ input }) => {
+      .action(async ({ req }) => {
         return {
-          message: `Hello, ${input.name}`,
+          message: `Hello, ${req.parsedInput.name}`,
         };
       });
 
@@ -25,13 +25,13 @@ describe('Next.js Action', () => {
 
     const formData = new FormData();
     formData.append('name', 'tom');
-    expect(action(undefined, formData)).resolves.toEqual({
+    expect(action(formData)).resolves.toEqual({
       message: 'Hello, tom',
     });
   });
 
   it('create nextjs server action with bindArgs', async () => {
-    const aa = new ApiAction({});
+    const aa = new NextAction({});
 
     const action = aa
       .post()
@@ -41,24 +41,24 @@ describe('Next.js Action', () => {
         }),
       )
       .bindArgs([z.string()])
-      .action(async ({ input, bindArgs }) => {
+      .action(async ({ req }) => {
         return {
-          message: `${bindArgs[0]}, ${input.name}`,
+          message: `${req.bindArgs[0]}, ${req.parsedInput.name}`,
         };
       });
 
     const formData = new FormData();
     formData.append('name', 'tom');
     // NOTE bind args always with state and formData
-    expect(action.bind(null, undefined, 'Hi')(formData)).resolves.toEqual({
+    expect(action.bind(null, 'Hi')(formData)).resolves.toEqual({
       message: 'Hi, tom',
     });
   });
 
   it('create nextjs server action with middleware', async () => {
-    const aa = new ApiAction({});
-    const middleware = jest.fn(async (c, next) => {
-      await next();
+    const aa = new NextAction({});
+    const middleware = jest.fn(async (opts) => {
+      await opts.next();
     });
 
     const aa2 = aa.use(middleware);

@@ -6,8 +6,6 @@ const is = {
   zod: (value: any): value is z.ZodType => '_def' in value,
 };
 
-// TODO support other schema
-
 export async function validate(transform: Transform, data: unknown) {
   if (is.zod(transform)) {
     return transform.parseAsync(data);

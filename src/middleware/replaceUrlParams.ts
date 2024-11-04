@@ -1,4 +1,5 @@
-import type { Middleware } from '../types.js';
+import type { Middleware } from '../compose.js';
+import type { HttpApiRequest } from '../types.js';
 
 function isObject(value: any): value is Record<string, any> {
   return typeof value === 'object' && !Array.isArray(value) && value !== null;
@@ -17,36 +18,36 @@ export interface ReplaceUrlParamsOptions {
  */
 export function replaceUrlParams(
   options: ReplaceUrlParamsOptions = {},
-): Middleware<{
-  config: {
-    url: string;
-  };
-  input: unknown;
-}, any> {
-  return async (ctx, next) => {
+): Middleware<any, any> {
+  return async (opts) => {
+    const { req } = opts as unknown as { req: HttpApiRequest };
     const { excludePathParams = true } = options;
     // replace url params with input
-    const params = ctx.config.url.match(/:\w+/g);
+    const params = req.url.match(/:\w+/g);
 
     if (params) {
-      let url = ctx.config.url;
-      const input = ctx.input;
+      (req as any).originalUrl = req.url;
+
+      let nextUrl = req.url;
       for (const param of params) {
         const key = param.slice(1);
-        if (isObject(input)) {
-          const value = input[key];
+        if (isObject(req.input)) {
+          const value = req.input[key];
           if (typeof value === 'number' || typeof value === 'string') {
-            url = url.replace(param, value.toString().replace(/\s/g, ''));
+            nextUrl = nextUrl.replace(
+              param,
+              value.toString().replace(/\s/g, ''),
+            );
             // remove path params
-            excludePathParams === true && delete input[key];
+            excludePathParams === true && delete req.input[key];
           }
         } else {
           console.warn(`Bad params ${key} data.`);
         }
       }
-      ctx.config.url = url;
+      req.url = nextUrl;
     }
 
-    return next();
+    return opts.next();
   };
 }
