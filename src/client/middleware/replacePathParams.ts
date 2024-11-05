@@ -5,7 +5,7 @@ function isObject(value: any): value is Record<string, any> {
   return typeof value === 'object' && !Array.isArray(value) && value !== null;
 }
 
-export interface ReplaceUrlParamsOptions {
+export interface ReplacePathParamsOptions {
   /**
    * Exclude path params in input
    * @default true
@@ -16,8 +16,8 @@ export interface ReplaceUrlParamsOptions {
 /**
  * Replace url params with input. e.g. `/users/:id` to `/users/1`
  */
-export function replaceUrlParams(
-  options: ReplaceUrlParamsOptions = {},
+export function replacePathParams(
+  options: ReplacePathParamsOptions = {},
 ): Middleware<any, any> {
   return async (opts) => {
     const { req } = opts as unknown as { req: HttpApiRequest };

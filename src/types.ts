@@ -76,9 +76,9 @@ export type Options = {
 /**
  * convert 'users/:id' to { id: string }
  */
-export type ExtractRouteParams<U extends string> =
+export type ExtractPathParams<U extends string> =
   U extends `${string}:${infer P}/${infer R}`
-    ? { [K in P | keyof ExtractRouteParams<R>]: string | number }
+    ? { [K in P | keyof ExtractPathParams<R>]: string | number }
     : U extends `${string}:${infer P}`
       ? { [K in P]: string | number }
       : // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>

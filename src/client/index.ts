@@ -2,7 +2,7 @@ import { BaseApi } from '../api.js';
 import type { Middleware } from '../compose.js';
 import type {
   ApiContext,
-  ExtractRouteParams,
+  ExtractPathParams,
   HttpApiConfig,
   HttpApiRequest,
   HttpRequest,
@@ -42,7 +42,7 @@ type HandleBuilder<M extends string, C extends Record<string, unknown>> = <
 >(
   url: U,
   initialConfig?: C,
-) => Handler<ExtractRouteParams<U>, unknown, M, U, never, never, C>;
+) => Handler<ExtractPathParams<U>, unknown, M, U, never, never, C>;
 
 type Action<Req, Ctx> = (
   opts: Prettify<

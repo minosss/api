@@ -21,8 +21,9 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 ## Quick Start
 
 ```ts
-import { ApiClient } from "@yme/api";
-import { logger, replaceUrlParams } from "@yme/api/middleware";
+import { ApiClient } from "@yme/api/client";
+import { logger } from "@yme/api/middleware";
+import { replacePathParams } from "@yme/api/client/middleware";
 
 const api = new ApiClient({
   action: async ({ req }) => {
@@ -37,8 +38,8 @@ const api = new ApiClient({
   },
   middlewares: [
     logger(),
-    // replace route params from input. e.g. /users/:id to /users/1
-    replaceUrlParams(),
+    // replace path params from input. e.g. /users/:id to /users/1
+    replacePathParams(),
   ],
 });
 

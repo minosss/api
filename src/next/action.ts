@@ -11,7 +11,7 @@ import type {
   HttpApiRequest,
   HttpApiConfig,
   AnyAsyncFn,
-  ExtractRouteParams,
+  ExtractPathParams,
   Prettify,
   Options,
 } from '../types.js';
@@ -176,7 +176,7 @@ export class NextAction<
     url: U,
     initialConfig?: HttpApiConfig<Req>,
   ): Handler<
-    ExtractRouteParams<U>,
+    ExtractPathParams<U>,
     unknown,
     'POST',
     U,
