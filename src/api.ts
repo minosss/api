@@ -19,9 +19,9 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
   }
 
   protected createHandler(opts: {
-    inputSchema: Transform | undefined;
-    outputSchema: Transform | undefined;
-    createRequest: (...args: any[]) => Promise<Req>;
+    inputSchema?: Transform;
+    outputSchema?: Transform;
+    createRequest: AnyAsyncFn<Req>;
     action: AnyAsyncFn;
   }): (...args: any[]) => Promise<any> {
     return async (...args: any[]) => {

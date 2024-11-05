@@ -1,5 +1,5 @@
-import type { Middleware } from '../compose.js';
-import type { AnyAsyncFn } from '../types.js';
+import type { Middleware } from '../../compose.js';
+import type { AnyAsyncFn } from '../../types.js';
 
 /**
  * refresh token middleware, token expired will be refreshed automatically

@@ -209,10 +209,6 @@ export class NextAction<
         method: 'POST',
         url,
       },
-      action: noop,
-      bindArgsSchema: [],
-      schema: undefined,
-      transform: undefined,
     });
   }
 
@@ -264,18 +260,18 @@ export class NextAction<
 
   private createNextActionHandler(handlerOpts: {
     initialConfig: HttpApiConfig<Req> & HttpRequest;
-    schema: Transform | undefined;
-    transform: Transform | undefined;
-    bindArgsSchema: any[];
-    action: AnyAsyncFn;
+    schema?: Transform;
+    transform?: Transform;
+    bindArgsSchema?: any[];
+    action?: AnyAsyncFn;
   }) {
     const handler: any = this.createHandler({
       createRequest: this.createRequest.bind(
         null,
         handlerOpts.initialConfig,
-        handlerOpts.bindArgsSchema,
+        handlerOpts.bindArgsSchema ?? [],
       ),
-      action: handlerOpts.action,
+      action: handlerOpts.action ?? noop,
       inputSchema: handlerOpts.schema,
       outputSchema: handlerOpts.transform,
     });

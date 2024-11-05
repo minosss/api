@@ -20,6 +20,14 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./client/middleware": {
+      "types": "./dist/client/middleware.d.ts",
+      "default": "./dist/client/middleware.js"
+    },
     "./middleware": {
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"
@@ -77,6 +85,10 @@
   "size-limit": [
     {
       "path": "dist/index.js",
+      "limit": "500 B"
+    },
+    {
+      "path": "dist/client/index.js",
       "limit": "1 kB"
     },
     {

@@ -5,17 +5,25 @@ import type { HttpRequest } from '../types.js';
 
 type LoggerFn = (message: string, ...others: string[]) => void;
 
-const prefixSet = {
-  Incoming: '<--',
-  Outgoing: '-->',
-};
-
 const now = () => performance.now();
 
 function time(start: number) {
   const delta = now() - start;
   return delta < 1000 ? `${delta}ms` : `${Math.round(delta / 1000)}s`;
 }
+
+export const isServer =
+  typeof globalThis.window === 'undefined' || 'Deno' in globalThis;
+
+const prefixSet = isServer
+  ? {
+      Start: '-->',
+      End: '<--',
+    }
+  : {
+      Start: '<--',
+      End: '-->',
+    };
 
 function log(
   fn: LoggerFn,
@@ -26,7 +34,7 @@ function log(
   time?: string,
 ) {
   const message =
-    prefix === prefixSet.Incoming
+    prefix === prefixSet.Start
       ? `${prefix} ${method} ${url}`
       : `${prefix} ${method} ${url} ${status} ${time}`;
   fn(message);
@@ -38,10 +46,10 @@ export function logger(fn: LoggerFn = console.log): Middleware<any, any> {
     const { method = 'unknown', url = 'unknown' } = req;
     const start = now();
 
-    log(fn, prefixSet.Outgoing, method, url);
+    log(fn, prefixSet.Start, method, url);
 
     await opts.next();
 
-    log(fn, prefixSet.Incoming, method, url, 0, time(start));
+    log(fn, prefixSet.End, method, url, 0, time(start));
   };
 }

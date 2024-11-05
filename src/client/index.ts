@@ -81,8 +81,6 @@ export class ApiClient<
             method: method.toUpperCase(),
             url,
           } as any,
-          schema: undefined,
-          transform: undefined,
         });
     }
   }
@@ -105,8 +103,8 @@ export class ApiClient<
 
   private createApiClientHandler(handlerOpts: {
     initialConfig: HttpApiConfig<Req> & HttpRequest;
-    schema: Transform | undefined;
-    transform: Transform | undefined;
+    schema?: Transform;
+    transform?: Transform;
   }) {
     const handler: any = this.createHandler({
       action: this.#action,

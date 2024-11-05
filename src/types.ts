@@ -42,7 +42,7 @@ export type IfUnknown<
 
 //
 export type AnyObject = Record<string, any>;
-export type AnyAsyncFn = (...args: any[]) => Promise<any>;
+export type AnyAsyncFn<R = any> = (...args: any[]) => Promise<R>;
 
 export type ApiRequest = {
   input: unknown;
