@@ -219,7 +219,7 @@ export class NextAction<
   ): Promise<Req> {
     const { method, url, withState, ...initial } = initialConfig;
 
-    let inputData: any;
+    let inputData = args[0];
     let state: any;
     let parsedBindArgs: any[] = [];
 
