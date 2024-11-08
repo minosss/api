@@ -1,4 +1,4 @@
-import { BaseApi } from '../api.js';
+import { BaseApi, type HandleError } from '../api.js';
 import type { Middleware } from '../compose.js';
 import type {
   ApiContext,
@@ -68,8 +68,12 @@ export class ApiClient<
   constructor(opts: {
     action: Action<Req, Ctx>;
     middlewares?: Middleware<Ctx, any>[];
+    handleError?: HandleError<Ctx>;
   }) {
-    super({ middlewares: opts.middlewares ?? [] });
+    super({
+      middlewares: opts.middlewares ?? [],
+      handleError: opts.handleError,
+    });
     this.#action = opts.action;
 
     const allMethods = ['get', 'post', 'put', 'delete', 'patch'] as const;

@@ -1,5 +1,5 @@
-import { BaseApi } from '../api.js';
-import type { Middleware } from '../compose.js';
+import { BaseApi, type HandleError } from '../api.js';
+import type { Middleware, MiddlewareOptions } from '../compose.js';
 import { ApiError } from '../error.js';
 import type {
   ApiContext,
@@ -166,8 +166,12 @@ export class NextAction<
 > extends BaseApi<Req, Ctx> {
   constructor(opts: {
     middlewares?: Middleware<Ctx, any>[];
+    handleError?: (err: unknown, opts: MiddlewareOptions<Ctx>) => Promise<void>;
   }) {
-    super({ middlewares: opts.middlewares ?? [] });
+    super({
+      middlewares: opts.middlewares ?? [],
+      handleError: opts.handleError,
+    });
   }
 
   // Behind the scenes, actions use the POST method, and only this HTTP method can invoke them.
@@ -264,6 +268,7 @@ export class NextAction<
     transform?: Transform;
     bindArgsSchema?: any[];
     action?: AnyAsyncFn;
+    handleError?: HandleError<Ctx>;
   }) {
     const handler: any = this.createHandler({
       createRequest: this.createRequest.bind(
@@ -274,6 +279,7 @@ export class NextAction<
       action: handlerOpts.action ?? noop,
       inputSchema: handlerOpts.schema,
       outputSchema: handlerOpts.transform,
+      handleError: handlerOpts.handleError ?? this.handleError,
     });
     handler.validator = (schema: Transform) =>
       this.createNextActionHandler({
