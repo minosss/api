@@ -17,12 +17,13 @@ export const isServer =
 
 const prefixSet = isServer
   ? {
-      Start: '-->',
-      End: '<--',
+      Start: '➡',
+      End: '⬅',
     }
   : {
-      Start: '<--',
-      End: '-->',
+      // up
+      Start: '⬆',
+      End: '⬇',
     };
 
 function log(
