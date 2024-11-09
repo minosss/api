@@ -43,7 +43,7 @@ describe('Next.js Action', () => {
       .bindArgs([z.string()])
       .action(async ({ req }) => {
         return {
-          message: `${req.bindArgs[0]}, ${req.parsedInput.name}`,
+          message: `${req.parsedBindArgs[0]}, ${req.parsedInput.name}`,
         };
       });
 

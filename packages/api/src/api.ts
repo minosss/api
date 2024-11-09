@@ -9,10 +9,10 @@ import type {
 } from './types.js';
 import { validate } from './validate.js';
 
-export type HandleError<C> = (
+export type HandleError<C, E = any> = (
   err: unknown,
   opts: MiddlewareOptions<C>,
-) => Promise<any>;
+) => Promise<E>;
 
 export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
   protected middlewares: Middleware<any, any>[];

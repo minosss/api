@@ -1,5 +1,5 @@
 import { BaseApi, type HandleError } from '../api.js';
-import type { Middleware, MiddlewareOptions } from '../compose.js';
+import type { Middleware } from '../compose.js';
 import { ApiError } from '../error.js';
 import type {
   ApiContext,
@@ -19,7 +19,7 @@ import { validate } from '../validate.js';
 import { noop } from './noop.js';
 
 export type NextActionRequest = HttpApiRequest & {
-  bindArgs: unknown[];
+  parsedBindArgs: unknown[];
   state: unknown;
 };
 
@@ -49,9 +49,9 @@ type Handler<
   ): Handler<I, InferOutput<OT>, M, U, S, OT, B, E, C>;
 
   /**
-   * define the action should returns a state.
+   * define the action should returns a state. e.g. state<{ message: string; code: number; data: unknown }>()
    */
-  state<OE = E>(): Handler<I, OE, M, U, S, T, [], OE, C>;
+  state<OE extends object>(): Handler<I, OE, M, U, S, T, [], OE, C>;
 
   /**
    * Passing additional arguments to the action handler.
@@ -59,21 +59,9 @@ type Handler<
    * @link https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#passing-additional-arguments
    * @param schema - bind arguments validation schema
    */
-  bindArgs<OB extends readonly [Transform]>(
+  bindArgs<const OB extends readonly Transform[]>(
     schema: OB,
   ): Handler<I, O, M, U, S, T, OB, unknown, C>;
-  bindArgs<OB extends readonly [Transform, Transform]>(
-    schema: OB,
-  ): Handler<I, O, M, U, S, T, OB, unknown, C>;
-  bindArgs<OB extends readonly [Transform, Transform, Transform]>(
-    schema: OB,
-  ): Handler<I, O, M, U, S, T, OB, unknown, C>;
-  bindArgs<OB extends readonly [Transform, Transform, Transform, Transform]>(
-    schema: OB,
-  ): Handler<I, O, M, U, S, T, OB, unknown, C>;
-  bindArgs<
-    OB extends readonly [Transform, Transform, Transform, Transform, Transform],
-  >(schema: OB): Handler<I, O, M, U, S, T, OB, unknown, C>;
 
   /**
    * Do something with the input data.
@@ -82,50 +70,45 @@ type Handler<
    */
   action<OO = O>(
     action: (
-      opts: C & { req: { input: unknown; parsedInput: I } },
+      opts: Prettify<
+        C & {
+          req: {
+            input: unknown;
+            parsedInput: I;
+            parsedBindArgs: InferInputArray<B>;
+          };
+        }
+      >,
     ) => Promise<IfUnknown<E, OO, E>>,
   ): ActionHandler<I, OO, M, U, S, T, B, E, C>;
 };
 
 type MaybeFormData<T> = T | FormData;
 
-type ActionHandler<I, O, M, U, S, _T, B, E, C> = IfUnknown<
+type InferInputArray<B extends readonly Transform[]> = {
+  [K in keyof B]: InferInput<B[K]>;
+};
+
+type ActionHandler<
+  I,
+  O,
+  M,
+  U,
+  S,
+  _T,
+  B extends readonly Transform[],
+  E,
+  C,
+> = IfUnknown<
   E,
   // use bind args
-  (B extends []
-    ? (input: MaybeFormData<I>) => Promise<O>
-    : B extends [Transform]
-      ? (arg0: InferOutput<B[0]>, input: MaybeFormData<I>) => Promise<O>
-      : B extends [Transform, Transform]
-        ? (
-            arg0: InferOutput<B[0]>,
-            arg1: InferOutput<B[1]>,
-            input: MaybeFormData<I>,
-          ) => Promise<O>
-        : B extends [Transform, Transform, Transform]
-          ? (
-              arg0: InferOutput<B[0]>,
-              arg1: InferOutput<B[1]>,
-              arg2: InferOutput<B[2]>,
-            ) => Promise<O>
-          : B extends [Transform, Transform, Transform, Transform]
-            ? (
-                arg0: InferOutput<B[0]>,
-                arg1: InferOutput<B[1]>,
-                arg2: InferOutput<B[2]>,
-                arg3: InferOutput<B[3]>,
-              ) => Promise<O>
-            : B extends [Transform, Transform, Transform, Transform, Transform]
-              ? (
-                  arg0: InferOutput<B[0]>,
-                  arg1: InferOutput<B[1]>,
-                  arg2: InferOutput<B[2]>,
-                  arg3: InferOutput<B[3]>,
-                  arg4: InferOutput<B[4]>,
-                ) => Promise<O>
-              : never) & {
+  {
+    (
+      ...args: [...bindArgs: InferInputArray<B>, input: MaybeFormData<I>]
+    ): Promise<O>;
+
     /**
-     * maybe you want to pick some data from the output
+     * maybe we want to pick some data from the output. e.g. take name of user or email
      *
      * @param transform - output transformation schema
      */
@@ -166,7 +149,7 @@ export class NextAction<
 > extends BaseApi<Req, Ctx> {
   constructor(opts: {
     middlewares?: Middleware<Ctx, any>[];
-    handleError?: (err: unknown, opts: MiddlewareOptions<Ctx>) => Promise<void>;
+    handleError?: HandleError<Ctx>;
   }) {
     super({
       middlewares: opts.middlewares ?? [],
@@ -256,7 +239,7 @@ export class NextAction<
       input,
       state,
       parsedInput: undefined,
-      bindArgs: parsedBindArgs,
+      parsedBindArgs,
       method,
       url,
     } as Req;
