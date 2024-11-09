@@ -9,7 +9,7 @@ const now = () => performance.now();
 
 function time(start: number) {
   const delta = now() - start;
-  return delta < 1000 ? `${delta}ms` : `${Math.round(delta / 1000)}s`;
+  return delta < 1000 ? `${delta.toFixed(1)}ms` : `${Math.round(delta / 1000)}s`;
 }
 
 export const isServer =
