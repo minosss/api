@@ -8,6 +8,8 @@
     "build:lib": "turbo run build --filter=@yme/api"
   },
 	"devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "typescript": "^5.5.4",
 		"turbo": "^2.2.3"
 	}
 }

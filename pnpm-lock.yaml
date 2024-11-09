@@ -8,9 +8,15 @@ importers:
 
   .:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.8.3
+        version: 1.9.4
       turbo:
         specifier: ^2.2.3
         version: 2.2.3
+      typescript:
+        specifier: ^5.5.4
+        version: 5.6.3
 
   examples/with-nextjs:
     dependencies:
@@ -45,9 +51,6 @@ importers:
 
   packages/api:
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^1.8.3
-        version: 1.9.4
       '@size-limit/preset-small-lib':
         specifier: ^11.1.6
         version: 11.1.6(size-limit@11.1.6)
