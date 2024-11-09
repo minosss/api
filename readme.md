@@ -75,6 +75,14 @@ Use Next.js (Server Action)
 import { NextAction } from "@yme/api/next/action";
 const api = new NextAction({
   middlewares: [],
+  // throwing an error will make the server return status 500
+  // we can handle it in the error handler. e.g. returns a fallback data with error message
+  handleError: async (err, opts) => {
+    return {
+      message: err.message,
+      code: err.code,
+    };
+  },
 });
 
 const updateUser = api
@@ -88,7 +96,10 @@ const updateUser = api
   )
   .bindArgs([z.string()])
   .action(async ({ req }) => {
-    // { bindArgs: [id], parsedInput: { name }}
+    const {
+      parsedBindArgs: [id],
+      parsedInput: { name },
+    } = req;
     return true;
   }); // updateUser(id: string, input: { name: string } | FormData): Promise<boolean>
 
