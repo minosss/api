@@ -75,4 +75,26 @@ describe('Next.js Action', () => {
     expect(action2({})).resolves.toEqual({ message: 'with middleware' });
     expect(middleware).toHaveBeenCalledTimes(1);
   });
+
+  it('create nextjs server action with selector', async () => {
+    const aa = new NextAction({});
+
+    const action = aa
+      .post()
+      .validator(
+        z.object({
+          name: z.string(),
+        }),
+      )
+      .action(async ({ req }) => {
+        return {
+          message: `hello, ${req.parsedInput.name}`,
+        };
+      });
+
+    const selectName = action.selector((s) => s.message.split(',')[1].trim());
+
+    expect(action({ name: 'tom' })).resolves.toEqual({ message: 'hello, tom' });
+    expect(selectName({ name: 'tom' })).resolves.toEqual('tom');
+  });
 });
