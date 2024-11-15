@@ -102,6 +102,8 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
             execute,
           } as any);
           res.ok = true;
+        } else {
+          throw error;
         }
       }
 
