@@ -24,7 +24,9 @@ export function replacePathParams(
   options: ReplacePathParamsOptions = {},
 ): Middleware<any, any> {
   return async (opts) => {
-    const { req } = opts as unknown as { req: HttpApiRequest & ReplacePathParamsRequest };
+    const { req } = opts as unknown as {
+      req: HttpApiRequest & ReplacePathParamsRequest;
+    };
     const { excludePathParams = true } = options;
     // replace url params with input
     const params = req.url.match(/:\w+/g);

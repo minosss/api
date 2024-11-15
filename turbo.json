@@ -2,14 +2,24 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
     },
     "lint": {},
     "test": {},
     "release": {
-      "dependsOn": ["build", "lint"],
-      "env": ["NPM_TOKEN", "GITHUB_TOKEN"]
+      "dependsOn": [
+        "build",
+        "lint"
+      ],
+      "env": [
+        "NPM_TOKEN",
+        "GITHUB_TOKEN"
+      ]
     },
     "clean": {
       "cache": false

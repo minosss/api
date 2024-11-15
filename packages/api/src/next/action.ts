@@ -51,7 +51,17 @@ type Handler<
   /**
    * define the action should returns a state. e.g. state<{ message: string; code: number; data: unknown }>()
    */
-  state<OE extends Record<string, unknown>>(): Handler<I, OE, M, U, S, T, [], OE, C>;
+  state<OE extends Record<string, unknown>>(): Handler<
+    I,
+    OE,
+    M,
+    U,
+    S,
+    T,
+    [],
+    OE,
+    C
+  >;
 
   /**
    * Passing additional arguments to the action handler.

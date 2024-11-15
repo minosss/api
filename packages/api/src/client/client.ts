@@ -78,7 +78,15 @@ export class ApiClient<
     });
     this.#action = opts.action;
 
-    const allMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'] as const;
+    const allMethods = [
+      'get',
+      'post',
+      'put',
+      'delete',
+      'patch',
+      'head',
+      'options',
+    ] as const;
     for (const method of allMethods) {
       this[method] = (url, initialConfig) =>
         this.createApiClientHandler({
