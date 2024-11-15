@@ -21,9 +21,8 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 ## Quick Start
 
 ```ts
-import { ApiClient } from "@yme/api/client";
+import { ApiClient, replacePathParams } from "@yme/api/client";
 import { logger } from "@yme/api/middleware";
-import { replacePathParams } from "@yme/api/client/middleware";
 
 const api = new ApiClient({
   action: async ({ req }) => {
@@ -72,7 +71,7 @@ const newUserId = await createUser(
 Use Next.js (Server Action)
 
 ```ts
-import { NextAction } from "@yme/api/next/action";
+import { NextAction } from "@yme/api/next";
 const api = new NextAction({
   middlewares: [],
   // throwing an error will make the server return status 500
