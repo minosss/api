@@ -13,6 +13,10 @@ export interface ReplacePathParamsOptions {
   excludePathParams?: boolean;
 }
 
+export type ReplacePathParamsRequest = {
+  rawUrl: string;
+};
+
 /**
  * Replace url params with input. e.g. `/users/:id` to `/users/1`
  */
@@ -20,13 +24,13 @@ export function replacePathParams(
   options: ReplacePathParamsOptions = {},
 ): Middleware<any, any> {
   return async (opts) => {
-    const { req } = opts as unknown as { req: HttpApiRequest };
+    const { req } = opts as unknown as { req: HttpApiRequest & ReplacePathParamsRequest };
     const { excludePathParams = true } = options;
     // replace url params with input
     const params = req.url.match(/:\w+/g);
 
     if (params) {
-      (req as any).originalUrl = req.url;
+      req.rawUrl = req.url;
 
       let nextUrl = req.url;
       for (const param of params) {
