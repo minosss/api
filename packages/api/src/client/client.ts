@@ -123,7 +123,7 @@ export class ApiClient<
         ...handlerOpts,
         schema,
       });
-    handler.transform = (transform: Transform) =>
+    handler.selector = (transform: Transform) =>
       this.createApiClientHandler({
         ...handlerOpts,
         transform,
