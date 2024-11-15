@@ -32,7 +32,7 @@ type Handler<
   T extends Transform,
   B extends readonly Transform[] = [],
   E = unknown,
-  C extends object = {},
+  C extends Record<string, unknown> = {},
 > = {
   /**
    * @param schema - input validation schema
@@ -51,7 +51,7 @@ type Handler<
   /**
    * define the action should returns a state. e.g. state<{ message: string; code: number; data: unknown }>()
    */
-  state<OE extends object>(): Handler<I, OE, M, U, S, T, [], OE, C>;
+  state<OE extends Record<string, unknown>>(): Handler<I, OE, M, U, S, T, [], OE, C>;
 
   /**
    * Passing additional arguments to the action handler.
@@ -278,6 +278,11 @@ export class NextAction<
       this.createNextActionHandler({
         ...handlerOpts,
         action,
+      });
+    handler.selector = (transform: Transform) =>
+      this.createNextActionHandler({
+        ...handlerOpts,
+        transform,
       });
     handler.state = () =>
       this.createNextActionHandler({
