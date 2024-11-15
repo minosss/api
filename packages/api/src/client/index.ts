@@ -64,6 +64,8 @@ export class ApiClient<
   declare put: HandleBuilder<'PUT', HttpApiConfig<Req>>;
   declare delete: HandleBuilder<'DELETE', HttpApiConfig<Req>>;
   declare patch: HandleBuilder<'PATCH', HttpApiConfig<Req>>;
+  declare head: HandleBuilder<'HEAD', HttpApiConfig<Req>>;
+  declare options: HandleBuilder<'OPTIONS', HttpApiConfig<Req>>;
 
   constructor(opts: {
     action: Action<Req, Ctx>;
@@ -76,7 +78,7 @@ export class ApiClient<
     });
     this.#action = opts.action;
 
-    const allMethods = ['get', 'post', 'put', 'delete', 'patch'] as const;
+    const allMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'] as const;
     for (const method of allMethods) {
       this[method] = (url, initialConfig) =>
         this.createApiClientHandler({
