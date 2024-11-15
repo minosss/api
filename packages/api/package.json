@@ -24,17 +24,13 @@
       "types": "./dist/client/index.d.ts",
       "default": "./dist/client/index.js"
     },
-    "./client/middleware": {
-      "types": "./dist/client/middleware.d.ts",
-      "default": "./dist/client/middleware.js"
-    },
     "./middleware": {
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"
     },
-    "./next/action": {
-      "types": "./dist/next/action.d.ts",
-      "default": "./dist/next/action.js"
+    "./next": {
+      "types": "./dist/next/index.d.ts",
+      "default": "./dist/next/index.js"
     }
   },
   "files": [
@@ -87,11 +83,15 @@
       "limit": "500 B"
     },
     {
-      "path": "dist/client/index.js",
+      "path": "dist/client/client.js",
       "limit": "1 kB"
     },
     {
       "path": "dist/next/action.js",
+      "limit": "1.2 kB"
+    },
+    {
+      "path": "dist/next/route.js",
       "limit": "1.2 kB"
     }
   ]
