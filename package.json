@@ -7,11 +7,21 @@
     "lint:lib": "turbo run lint --filter=@yme/api",
     "test:lib": "turbo run test --filter=@yme/api",
     "build:lib": "turbo run build --filter=@yme/api",
-    "release:lib": "turbo run release --filter=@yme/api"
+    "release:lib": "turbo run release --filter=@yme/api",
+    "prepare": "husky"
   },
-	"devDependencies": {
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "typescript": "^5.5.4",
-		"turbo": "^2.2.3"
-	}
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.6",
+    "turbo": "^2.2.3",
+    "typescript": "^5.5.4"
+  }
 }
