@@ -1,7 +1,7 @@
 {
   "name": "@yme/api",
   "description": "define type-safe API requests simply",
-  "version": "2.0.0-alpha.13",
+  "version": "0.0.0-development",
   "type": "module",
   "sideEffects": false,
   "author": "mino",
@@ -40,23 +40,23 @@
     "clean": "rm -rf node_modules dist",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && publint --strict",
     "prepublishOnly": "npm run build",
-    "release": "np",
+    "release": "semantic-release",
     "test": "bun test --coverage",
     "lint": "biome lint",
     "format": "biome format --write ."
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "next"
+    "access": "public"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^11.1.6",
     "@types/bun": "^1.1.8",
     "@types/node": "^22.5.4",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "next": "^14.2.15",
     "node-mocks-http": "^1.16.1",
-    "np": "^10.0.7",
     "publint": "^0.2.10",
+    "semantic-release": "^24.2.0",
     "size-limit": "^11.1.6",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"

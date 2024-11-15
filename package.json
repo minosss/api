@@ -4,8 +4,10 @@
   "packageManager": "pnpm@9.12.3",
   "scripts": {
     "build": "turbo run build",
+    "lint:lib": "turbo run lint --filter=@yme/api",
     "test:lib": "turbo run test --filter=@yme/api",
-    "build:lib": "turbo run build --filter=@yme/api"
+    "build:lib": "turbo run build --filter=@yme/api",
+    "release:lib": "turbo run release --filter=@yme/api"
   },
 	"devDependencies": {
     "@biomejs/biome": "^1.8.3",
