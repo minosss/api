@@ -13,7 +13,7 @@ import type {
 import type { Middleware } from '../compose.js';
 import { noop } from './noop.js';
 
-// extract the path params from the urlq
+// extract the path params from the url
 type PathParams<_U extends string> = Record<string, string | string[]>;
 
 type Handler<
@@ -53,23 +53,32 @@ type Handler<
   ): Handler<I, OO, M, U, S, T, C>;
 };
 
-type HandleBuilder<M extends string, C extends Record<string, unknown>> = <
-  U extends string,
->(
-  url: U,
-  initialConfig?: C,
-) => Handler<unknown, unknown, M, U, never, never, C>;
+type HandleBuilder<M extends string, C extends Record<string, unknown>> = {
+  <U extends string, IC extends C = C>(
+    url: U,
+    initialConfig?: IC,
+  ): Handler<unknown, unknown, M, U, never, never, IC>;
+  <IC extends C = C>(
+    initialConfig?: IC,
+  ): Handler<unknown, unknown, M, '', never, never, IC>;
+};
 
 export type NextRouteRequest = HttpApiRequest & {
   rawRequest: NextRequest;
-  params: Record<string, string | string[]>;
+  pathParams: Record<string, string | string[]>;
 };
 
 export class NextRoute<
   Req extends NextRouteRequest,
   Ctx extends ApiContext,
 > extends BaseApi<Req, Ctx> {
+  declare get: HandleBuilder<'GET', HttpApiConfig<Req>>;
   declare post: HandleBuilder<'POST', HttpApiConfig<Req>>;
+  declare put: HandleBuilder<'PUT', HttpApiConfig<Req>>;
+  declare patch: HandleBuilder<'PATCH', HttpApiConfig<Req>>;
+  declare delete: HandleBuilder<'DELETE', HttpApiConfig<Req>>;
+  declare head: HandleBuilder<'HEAD', HttpApiConfig<Req>>;
+  declare options: HandleBuilder<'OPTIONS', HttpApiConfig<Req>>;
 
   constructor(opts: {
     middlewares?: Middleware<Ctx, any>[];
@@ -79,10 +88,32 @@ export class NextRoute<
       middlewares: opts.middlewares ?? [],
       handleError: opts.handleError,
     });
+    const allMethods = [
+      'get',
+      'post',
+      'put',
+      'patch',
+      'delete',
+      'head',
+      'options',
+    ];
+    for (const method of allMethods) {
+      this[method] = (...args: any[]) => {
+        const url = typeof args[0] === 'string' ? args[0] : '';
+        const initialConfig = typeof args[0] === 'object' ? args[0] : args[1];
+        return this.createNextRouteHandler({
+          initialConfig: {
+            ...initialConfig,
+            method: method.toUpperCase(),
+            url,
+          },
+        });
+      };
+    }
   }
 
   private async createRequest(
-    initialConfig: HttpRequest & {},
+    initialConfig: HttpRequest,
     req: NextRequest,
     route: { params: Record<string, string | string[]> },
   ) {
@@ -92,7 +123,10 @@ export class NextRoute<
 
     // form data or json
     let input: any;
-    if (req.body) {
+
+    if (method === 'GET') {
+      input = Object.fromEntries(req.nextUrl.searchParams);
+    } else if (req.body) {
       const contentType = req.headers.get('content-type');
       if (contentType === 'application/json') {
         input = await req.json();
@@ -108,7 +142,7 @@ export class NextRoute<
       ...initial,
       input,
       parsedInput: undefined,
-      params: route.params,
+      pathParams: route?.params,
       rawRequest: req,
       method,
       url,
@@ -116,7 +150,7 @@ export class NextRoute<
   }
 
   private createNextRouteHandler(handlerOpts: {
-    initialConfig: HttpApiConfig<Req> & HttpRequest;
+    initialConfig: Partial<HttpApiConfig<Req>> & HttpRequest;
     schema?: Transform;
     transform?: Transform;
     action?: AnyAsyncFn;
