@@ -86,7 +86,7 @@ export class ApiClient<
       'patch',
       'head',
       'options',
-    ] as const;
+    ];
     for (const method of allMethods) {
       this[method] = (url, initialConfig) =>
         this.createApiClientHandler({
@@ -100,7 +100,7 @@ export class ApiClient<
   }
 
   private async createRequest(
-    initialConfig: { method: string; url: string },
+    initialConfig: HttpRequest,
     input: unknown,
     requestConfig = {},
   ): Promise<Req> {
@@ -116,7 +116,7 @@ export class ApiClient<
   }
 
   private createApiClientHandler(handlerOpts: {
-    initialConfig: HttpApiConfig<Req> & HttpRequest;
+    initialConfig: Partial<HttpApiConfig<Req>> & HttpRequest;
     schema?: Transform;
     transform?: Transform;
   }) {

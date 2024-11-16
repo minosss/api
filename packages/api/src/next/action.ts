@@ -168,10 +168,10 @@ export class NextAction<
   }
 
   // Behind the scenes, actions use the POST method, and only this HTTP method can invoke them.
-  post<U extends string>(
+  post<U extends string, C extends HttpApiConfig<Req> = HttpApiConfig<Req>>(
     /** url is optional, if not provided, it will be empty string */
     url: U,
-    initialConfig?: HttpApiConfig<Req>,
+    initialConfig?: C,
   ): Handler<
     ExtractPathParams<U>,
     unknown,
@@ -181,10 +181,10 @@ export class NextAction<
     never,
     [],
     unknown,
-    Prettify<Options & { req: Req; ctx: Ctx }>
+    Prettify<Options & { req: C & Req; ctx: Ctx }>
   >;
-  post(
-    initialConfig?: HttpApiConfig<Req>,
+  post<C extends HttpApiConfig<Req> = HttpApiConfig<Req>>(
+    initialConfig?: C,
   ): Handler<
     unknown,
     unknown,
@@ -256,7 +256,7 @@ export class NextAction<
   }
 
   private createNextActionHandler(handlerOpts: {
-    initialConfig: HttpApiConfig<Req> & HttpRequest;
+    initialConfig: Partial<HttpApiConfig<Req>> & HttpRequest;
     schema?: Transform;
     transform?: Transform;
     bindArgsSchema?: any[];

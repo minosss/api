@@ -7,25 +7,30 @@ describe('Next.js Action', () => {
     const aa = new NextAction({});
 
     const action = aa
-      .post()
+      .post('/say', { actionName: 'sayHello' })
       .validator(
         z.object({
           name: z.string(),
         }),
       )
       .action(async ({ req }) => {
+        // req.actionName
+        //     ^type: string
         return {
+          actionName: req.actionName,
           message: `Hello, ${req.parsedInput.name}`,
         };
       });
 
     expect(action({ name: 'tom' })).resolves.toEqual({
+      actionName: 'sayHello',
       message: 'Hello, tom',
     });
 
     const formData = new FormData();
     formData.append('name', 'tom');
     expect(action(formData)).resolves.toEqual({
+      actionName: 'sayHello',
       message: 'Hello, tom',
     });
   });

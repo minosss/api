@@ -59,7 +59,11 @@ export type HttpRequest = {
   url: string;
 };
 
-export type HttpApiRequest = ApiRequest & HttpRequest;
+export type HttpApiRequest = {
+  // custom properties
+  [key: string]: unknown;
+} & ApiRequest &
+  HttpRequest;
 
 export type HttpApiConfig<T extends HttpApiRequest> = Omit<
   T,
