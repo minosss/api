@@ -87,6 +87,7 @@ const api = new NextAction({
 const updateUser = api
   .post({
     // ...initial,
+    actionName: "updateUser",
   })
   .validator(
     z.object({
@@ -98,6 +99,7 @@ const updateUser = api
     const {
       parsedBindArgs: [id],
       parsedInput: { name },
+      actionName, // "updateUser"
     } = req;
     return true;
   }); // updateUser(id: string, input: { name: string } | FormData): Promise<boolean>

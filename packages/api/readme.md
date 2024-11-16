@@ -21,9 +21,8 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 ## Quick Start
 
 ```ts
-import { ApiClient } from "@yme/api/client";
+import { ApiClient, replacePathParams } from "@yme/api/client";
 import { logger } from "@yme/api/middleware";
-import { replacePathParams } from "@yme/api/client/middleware";
 
 const api = new ApiClient({
   action: async ({ req }) => {
@@ -72,14 +71,23 @@ const newUserId = await createUser(
 Use Next.js (Server Action)
 
 ```ts
-import { NextAction } from "@yme/api/next/action";
+import { NextAction } from "@yme/api/next";
 const api = new NextAction({
   middlewares: [],
+  // throwing an error will make the server return status 500
+  // we can handle it in the error handler. e.g. returns a fallback data with error message
+  handleError: async (err, opts) => {
+    return {
+      message: err.message,
+      code: err.code,
+    };
+  },
 });
 
 const updateUser = api
   .post({
     // ...initial,
+    actionName: "updateUser",
   })
   .validator(
     z.object({
@@ -88,7 +96,11 @@ const updateUser = api
   )
   .bindArgs([z.string()])
   .action(async ({ req }) => {
-    // { bindArgs: [id], parsedInput: { name }}
+    const {
+      parsedBindArgs: [id],
+      parsedInput: { name },
+      actionName, // "updateUser"
+    } = req;
     return true;
   }); // updateUser(id: string, input: { name: string } | FormData): Promise<boolean>
 
