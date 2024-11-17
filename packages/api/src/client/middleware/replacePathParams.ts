@@ -18,7 +18,7 @@ export type ReplacePathParamsRequest = {
 };
 
 /**
- * Replace url params with input. e.g. `/users/:id` to `/users/1`
+ * Replace url params with input. e.g. `/users/[id]` to `/users/1`
  */
 export function replacePathParams(
   options: ReplacePathParamsOptions = {},

@@ -37,7 +37,7 @@ const api = new ApiClient({
   },
   middlewares: [
     logger(),
-    // replace path params from input. e.g. /users/:id to /users/1
+    // replace path params from input. e.g. /users/[id] to /users/1
     replacePathParams(),
   ],
 });

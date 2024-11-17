@@ -86,11 +86,11 @@ describe('ApiClient', () => {
       ],
     });
 
-    await apiClient.get('/test/:id')({ id: '123' });
+    await apiClient.get('/test/[id]')({ id: '123' });
     expect(action).toHaveBeenCalledTimes(1);
     expect(action.mock.calls[0][0].req).toEqual({
       method: 'GET',
-      rawUrl: '/test/:id',
+      rawUrl: '/test/[id]',
       url: '/test/123',
       input: {},
       parsedInput: undefined,
