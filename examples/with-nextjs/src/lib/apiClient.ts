@@ -2,7 +2,7 @@
 
 import type { HttpApiRequest } from '@yme/api';
 import { ApiClient } from '@yme/api/client';
-import { replacePathParams } from '@yme/api/client/middleware';
+import { replacePathParams } from '@yme/api/client';
 import { logger } from '@yme/api/middleware';
 import { z } from 'zod';
 
