@@ -39,7 +39,6 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
       const ctx = {} as Ctx;
       const res: ApiResponse = {
         output: undefined,
-        ok: false,
       };
       const execute = () =>
         opts.action({
@@ -69,12 +68,11 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
           } as any,
           async (opts) => {
             res.output = await execute();
-            res.ok = true;
             return opts.next();
           },
         );
 
-        if (!res.ok) {
+        if (res.output === undefined) {
           throw new ApiError({
             message:
               'The action function or middleware(s) did not set a valid output. Please ensure the output is defined and valid.',
@@ -100,8 +98,7 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
             req,
             res,
             execute,
-          } as any);
-          res.ok = true;
+          });
         } else {
           throw error;
         }

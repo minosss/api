@@ -42,7 +42,6 @@ export function refreshToken<R extends AnyAsyncFn>(options: {
         .then((value) => options.beforeRetry?.(value, {}))
         .then(async () => {
           opts.res.output = await opts.execute();
-          opts.res.ok = true;
         })
         .finally(() => {
           refreshing = null;
