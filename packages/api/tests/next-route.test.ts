@@ -3,11 +3,11 @@ import { NextRoute } from '../src/next/route.js';
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server.js';
 
+const nextRoute = new NextRoute({});
+
 describe('Next.js Route', () => {
   it('should be able to create a route', async () => {
-    const route = new NextRoute({});
-
-    const GET = route
+    const GET = nextRoute
       .get({ action: 'getUsers' })
       .validator(
         z.object({
