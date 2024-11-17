@@ -29,14 +29,15 @@ export function replacePathParams(
     };
     const { excludePathParams = true } = options;
     // replace url params with input
-    const params = req.url.match(/:\w+/g);
+    const params = req.url.match(/\[\w+\]/g);
 
     if (params) {
       req.rawUrl = req.url;
 
       let nextUrl = req.url;
       for (const param of params) {
-        const key = param.slice(1);
+        // remove brackets
+        const key = param.slice(1, -1);
         if (isObject(req.input)) {
           const value = req.input[key];
           if (typeof value === 'number' || typeof value === 'string') {

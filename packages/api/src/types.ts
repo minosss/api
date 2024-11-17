@@ -45,17 +45,33 @@ export type AnyObject = Record<string, any>;
 export type AnyAsyncFn<R = any> = (...args: any[]) => Promise<R>;
 
 export type ApiRequest = {
+  /**
+   * input of the api
+   */
   input: unknown;
+
+  /**
+   * parsed input, should be set after validation
+   */
   parsedInput: unknown;
 };
 
 export type ApiResponse = {
+  /**
+   * output of the api, can be anything except `undefined`.
+   */
   output: unknown;
-  ok: boolean;
 };
 
 export type HttpRequest = {
+  /**
+   * http method, e.g. 'GET', 'POST', 'PUT', 'DELETE'
+   */
   method: string;
+
+  /**
+   * http url
+   */
   url: string;
 };
 
@@ -78,12 +94,10 @@ export type Options = {
 };
 
 /**
- * convert 'users/:id' to { id: string }
+ * convert 'users/[id]' to { id: string }
  */
 export type ExtractPathParams<U extends string> =
-  U extends `${string}:${infer P}/${infer R}`
+  U extends `${string}[${infer P}]${infer R}`
     ? { [K in P | keyof ExtractPathParams<R>]: string | number }
-    : U extends `${string}:${infer P}`
-      ? { [K in P]: string | number }
-      : // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
-        void;
+    : // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
+      void;
