@@ -24,6 +24,10 @@ module.exports = {
           { type: 'chore', release: false },
           { type: 'test', release: false },
           { type: 'style', release: false },
+          { release: 'patch', subject: '*force release*' },
+          { release: 'patch', subject: '*force patch*' },
+          { release: 'minor', subject: '*force minor*' },
+          { release: 'major', subject: '*force major*' },
           { subject: '*skip release*', release: false },
         ],
         parserOpts: {
