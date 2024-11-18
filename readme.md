@@ -1,5 +1,3 @@
-> This is v2 of `@yme/api`. If you are looking for v1, please visit [v1 branch](https://github.com/minosss/api/tree/v1).
-
 Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No server required and zero dependencies.
 
 > If you are developing a full-stack web application, you should take a look [tRPC](https://trpc.io/).
@@ -18,7 +16,19 @@ Hey 👋, `@yme/api` is a package that defines the type-safe API requests. No se
 [input] -> [middlewares, action] -> [output]
 ```
 
+## Migration from v1 to v2
+
+Check out the [migration guide](./docs/migrations/v1-to-v2.md).
+
+## Installation
+
+```bash
+npm install @yme/api
+```
+
 ## Quick Start
+
+Use `ApiClient` with `fetch` (Action first)
 
 ```ts
 import { ApiClient, replacePathParams } from "@yme/api/client";
@@ -68,7 +78,7 @@ const newUserId = await createUser(
 );
 ```
 
-Use Next.js (Server Action)
+Use `NextAction` for Next.js server action (Action last)
 
 ```ts
 import { NextAction } from "@yme/api/next";
