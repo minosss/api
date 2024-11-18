@@ -1,6 +1,6 @@
 {
   "name": "@yme/api",
-  "description": "define type-safe API requests simply",
+  "description": "Simply create some standalone functions",
   "version": "0.0.0-development",
   "type": "module",
   "sideEffects": false,
