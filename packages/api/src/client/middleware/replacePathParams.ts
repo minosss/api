@@ -1,5 +1,5 @@
 import type { Middleware } from '../../compose.js';
-import type { HttpApiRequest } from '../../types.js';
+import type { ApiRequest } from '../../types.js';
 
 function isObject(value: any): value is Record<string, any> {
   return typeof value === 'object' && !Array.isArray(value) && value !== null;
@@ -22,10 +22,10 @@ export type ReplacePathParamsRequest = {
  */
 export function replacePathParams(
   options: ReplacePathParamsOptions = {},
-): Middleware<any, any> {
+): Middleware<any> {
   return async (opts) => {
     const { req } = opts as unknown as {
-      req: HttpApiRequest & ReplacePathParamsRequest;
+      req: ApiRequest & ReplacePathParamsRequest;
     };
     const { excludePathParams = true } = options;
     // replace url params with input

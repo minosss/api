@@ -42,6 +42,7 @@ export type IfUnknown<
 
 //
 export type AnyObject = Record<string, any>;
+export type SomeObject = Record<string, unknown>;
 export type AnyAsyncFn<R = any> = (...args: any[]) => Promise<R>;
 
 export type ApiRequest = {
@@ -54,16 +55,7 @@ export type ApiRequest = {
    * parsed input, should be set after validation
    */
   parsedInput: unknown;
-};
 
-export type ApiResponse = {
-  /**
-   * output of the api, can be anything except `undefined`.
-   */
-  output: unknown;
-};
-
-export type HttpRequest = {
   /**
    * http method, e.g. 'GET', 'POST', 'PUT', 'DELETE'
    */
@@ -75,22 +67,28 @@ export type HttpRequest = {
   url: string;
 };
 
-export type HttpApiRequest = {
-  // custom properties
-  [key: string]: unknown;
-} & ApiRequest &
-  HttpRequest;
+export type ApiResponse = {
+  /**
+   * output of the api, can be anything except `undefined`.
+   */
+  output: unknown;
+};
 
-export type HttpApiConfig<T extends HttpApiRequest> = Omit<
-  T,
-  keyof HttpApiRequest
->;
+export type ExtractRequestConfig<
+  T extends ApiRequest,
+  R extends ApiRequest = ApiRequest,
+> = Omit<T, keyof R>;
 
 export type ApiContext = {};
 
 export type Options = {
-  ctx: Record<string, unknown>;
+  ctx: SomeObject;
   req: ApiRequest;
+};
+
+export type Env = {
+  Req?: AnyObject;
+  Ctx?: AnyObject;
 };
 
 /**

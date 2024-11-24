@@ -14,17 +14,21 @@ export type HandleError<C, E = any> = (
   opts: MiddlewareOptions<C>,
 ) => Promise<E>;
 
-export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
-  protected middlewares: Middleware<any, any>[];
+export type ApiOptions<Ctx extends ApiContext> = {
+  middlewares?: Middleware<Ctx>[];
+  handleError?: HandleError<Ctx>;
+};
+
+export abstract class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
+  protected middlewares: Middleware<any>[];
   protected handleError?: HandleError<Ctx>;
 
-  constructor(opts: {
-    middlewares: Middleware<any, any>[];
-    handleError?: HandleError<Ctx>;
-  }) {
-    this.middlewares = opts.middlewares;
+  constructor(opts: ApiOptions<Ctx>) {
+    this.middlewares = opts.middlewares ?? [];
     this.handleError = opts.handleError;
   }
+
+  protected abstract createRequest(...args: unknown[]): AnyAsyncFn<Req>;
 
   protected createHandler(opts: {
     inputSchema?: Transform;
@@ -32,7 +36,7 @@ export class BaseApi<Req extends ApiRequest, Ctx extends ApiContext> {
     createRequest: AnyAsyncFn<Req>;
     action: AnyAsyncFn;
     handleError?: HandleError<Ctx>;
-  }): (...args: any[]) => Promise<any> {
+  }): AnyAsyncFn {
     return async (...args: any[]) => {
       // request
       const req = await opts.createRequest(...args);

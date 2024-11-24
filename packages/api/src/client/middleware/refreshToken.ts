@@ -14,7 +14,7 @@ export function refreshToken<R extends AnyAsyncFn>(options: {
   ) => Promise<any>;
   /** should refresh or not */
   shouldRefresh: (error: unknown, context: unknown) => boolean;
-}): Middleware<any, any> {
+}): Middleware<any> {
   let refreshing: Promise<any> | null = null;
 
   return async (opts) => {

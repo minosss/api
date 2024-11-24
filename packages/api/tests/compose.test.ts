@@ -3,12 +3,12 @@ import { type Middleware, compose } from '../src/compose.js';
 
 describe('compose', () => {
   it('should execute middlewares in order', async () => {
-    const middleware1: Middleware<any, any> = async (opts) => {
+    const middleware1: Middleware<any> = async (opts) => {
       opts.res.output = 'middleware1';
       return opts.next();
     };
 
-    const middleware2: Middleware<any, any> = async (opts) => {
+    const middleware2: Middleware<any> = async (opts) => {
       opts.res.output += ' middleware2';
       return opts.next();
     };
@@ -26,7 +26,7 @@ describe('compose', () => {
   });
 
   it('should not call next() multiple times', async () => {
-    const middleware1: Middleware<any, any> = async (opts) => {
+    const middleware1: Middleware<any> = async (opts) => {
       await opts.next();
       await opts.next(); // This should throw an error
     };

@@ -6,13 +6,13 @@ export type MiddlewareOptions<Ctx> = Options & {
   res: ApiResponse;
 };
 
-export type Middleware<Ctx, _NextCtx> = (
+export type Middleware<Ctx, _NextCtx = any> = (
   opts: MiddlewareOptions<Ctx> & {
     next: <NC extends object>(opts?: { ctx?: NC }) => Promise<any>;
   },
 ) => Promise<any>;
 
-export function compose(middlewares: Middleware<any, any>[]) {
+export function compose(middlewares: Middleware<any>[]) {
   return function composed(
     opts: MiddlewareOptions<any>,
     next?: (opts: any) => Promise<any>,
@@ -26,7 +26,7 @@ export function compose(middlewares: Middleware<any, any>[]) {
       }
       index = i;
 
-      let handler: Middleware<any, any> | undefined;
+      let handler: Middleware<any> | undefined;
       if (middlewares[i]) {
         handler = middlewares[i];
       } else {

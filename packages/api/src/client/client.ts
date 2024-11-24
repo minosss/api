@@ -1,17 +1,22 @@
-import { BaseApi, type HandleError } from '../api.js';
+import { type ApiOptions, BaseApi } from '../api.js';
 import type { Middleware } from '../compose.js';
 import type {
   ApiContext,
   ExtractPathParams,
-  HttpApiConfig,
-  HttpApiRequest,
-  HttpRequest,
+  ExtractRequestConfig,
   InferInput,
   InferOutput,
   Options,
   Prettify,
   Transform,
+  ApiRequest,
+  SomeObject,
 } from '../types.js';
+
+type InitialConfig = {
+  method: string;
+  url: string;
+};
 
 type Handler<
   I,
@@ -20,7 +25,7 @@ type Handler<
   U extends string,
   S extends Transform,
   T extends Transform,
-  C extends object = {},
+  C extends SomeObject = {},
 > = {
   (input: I): Promise<O>;
   (input: I, requestConfig: C): Promise<O>;
@@ -37,9 +42,7 @@ type Handler<
   T<OI = I, OO = O>(): Handler<OI, OO, M, U, S, T, C>;
 };
 
-type HandleBuilder<M extends string, C extends Record<string, unknown>> = <
-  U extends string,
->(
+type HandleBuilder<M extends string, C extends SomeObject> = <U extends string>(
   url: U,
   initialConfig?: C,
 ) => Handler<ExtractPathParams<U>, unknown, M, U, never, never, C>;
@@ -53,27 +56,30 @@ type Action<Req, Ctx> = (
   >,
 ) => Promise<any>;
 
+export type ApiClientOptions<
+  Req extends ApiRequest,
+  Ctx extends ApiContext,
+> = ApiOptions<Ctx> & {
+  action: Action<Req, Ctx>;
+};
+
 export class ApiClient<
-  Req extends HttpApiRequest,
+  Req extends ApiRequest,
   Ctx extends ApiContext,
 > extends BaseApi<Req, Ctx> {
   #action: Action<Req, Ctx>;
 
-  declare get: HandleBuilder<'GET', HttpApiConfig<Req>>;
-  declare post: HandleBuilder<'POST', HttpApiConfig<Req>>;
-  declare put: HandleBuilder<'PUT', HttpApiConfig<Req>>;
-  declare delete: HandleBuilder<'DELETE', HttpApiConfig<Req>>;
-  declare patch: HandleBuilder<'PATCH', HttpApiConfig<Req>>;
-  declare head: HandleBuilder<'HEAD', HttpApiConfig<Req>>;
-  declare options: HandleBuilder<'OPTIONS', HttpApiConfig<Req>>;
+  declare get: HandleBuilder<'GET', ExtractRequestConfig<Req>>;
+  declare post: HandleBuilder<'POST', ExtractRequestConfig<Req>>;
+  declare put: HandleBuilder<'PUT', ExtractRequestConfig<Req>>;
+  declare delete: HandleBuilder<'DELETE', ExtractRequestConfig<Req>>;
+  declare patch: HandleBuilder<'PATCH', ExtractRequestConfig<Req>>;
+  declare head: HandleBuilder<'HEAD', ExtractRequestConfig<Req>>;
+  declare options: HandleBuilder<'OPTIONS', ExtractRequestConfig<Req>>;
 
-  constructor(opts: {
-    action: Action<Req, Ctx>;
-    middlewares?: Middleware<Ctx, any>[];
-    handleError?: HandleError<Ctx>;
-  }) {
+  constructor(opts: ApiClientOptions<Req, Ctx>) {
     super({
-      middlewares: opts.middlewares ?? [],
+      middlewares: opts.middlewares,
       handleError: opts.handleError,
     });
     this.#action = opts.action;
@@ -88,41 +94,39 @@ export class ApiClient<
       'options',
     ];
     for (const method of allMethods) {
-      this[method] = (url, initialConfig) =>
+      this[method] = (url: string, initialConfig = {}) =>
         this.createApiClientHandler({
           initialConfig: {
             ...initialConfig,
             method: method.toUpperCase(),
             url,
-          } as any,
+          },
         });
     }
   }
 
-  private async createRequest(
-    initialConfig: HttpRequest,
-    input: unknown,
-    requestConfig = {},
-  ): Promise<Req> {
-    const { method, url, ...initial } = initialConfig;
-    return {
-      ...initial,
-      ...requestConfig,
-      input,
-      parsedInput: undefined,
-      method,
-      url,
-    } as Req;
+  protected createRequest(initialConfig: InitialConfig) {
+    return async (input: unknown, requestConfig = {}) => {
+      const { method, url, ...initial } = initialConfig;
+      return {
+        ...initial,
+        ...requestConfig,
+        input,
+        parsedInput: undefined,
+        method,
+        url,
+      } as Req;
+    };
   }
 
   private createApiClientHandler(handlerOpts: {
-    initialConfig: Partial<HttpApiConfig<Req>> & HttpRequest;
+    initialConfig: InitialConfig;
     schema?: Transform;
     transform?: Transform;
   }) {
     const handler: any = this.createHandler({
       action: this.#action,
-      createRequest: this.createRequest.bind(null, handlerOpts.initialConfig),
+      createRequest: this.createRequest(handlerOpts.initialConfig),
       inputSchema: handlerOpts.schema,
       outputSchema: handlerOpts.transform,
     });

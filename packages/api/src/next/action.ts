@@ -1,4 +1,4 @@
-import { BaseApi, type HandleError } from '../api.js';
+import { type ApiOptions, BaseApi, type HandleError } from '../api.js';
 import type { Middleware } from '../compose.js';
 import { ApiError } from '../error.js';
 import type {
@@ -7,20 +7,28 @@ import type {
   InferOutput,
   Transform,
   IfUnknown,
-  HttpRequest,
-  HttpApiRequest,
-  HttpApiConfig,
+  ExtractRequestConfig,
   AnyAsyncFn,
   ExtractPathParams,
   Prettify,
   Options,
+  ApiRequest,
 } from '../types.js';
 import { validate } from '../validate.js';
 import { noop } from './noop.js';
 
-export type NextActionRequest = HttpApiRequest & {
+export type NextActionRequest = ApiRequest & {
   parsedBindArgs: unknown[];
   state: unknown;
+};
+
+export type NextActionRequestConfig<Req extends NextActionRequest> =
+  ExtractRequestConfig<Req, NextActionRequest>;
+
+type InitialConfig = {
+  withState?: boolean;
+  method: string;
+  url: string;
 };
 
 type Handler<
@@ -130,6 +138,11 @@ type ActionHandler<
   (prevState: E, input: MaybeFormData<I>) => Promise<E>
 >;
 
+export type NextActionOptions<
+  _Req extends NextActionRequest,
+  Ctx extends ApiContext,
+> = ApiOptions<Ctx>;
+
 /**
  *
  * @example
@@ -157,18 +170,18 @@ export class NextAction<
   Req extends NextActionRequest,
   Ctx extends ApiContext,
 > extends BaseApi<Req, Ctx> {
-  constructor(opts: {
-    middlewares?: Middleware<Ctx, any>[];
-    handleError?: HandleError<Ctx>;
-  }) {
+  constructor(opts: NextActionOptions<Req, Ctx>) {
     super({
-      middlewares: opts.middlewares ?? [],
+      middlewares: opts.middlewares,
       handleError: opts.handleError,
     });
   }
 
   // Behind the scenes, actions use the POST method, and only this HTTP method can invoke them.
-  post<U extends string, C extends HttpApiConfig<Req> = HttpApiConfig<Req>>(
+  post<
+    U extends string,
+    C extends NextActionRequestConfig<Req> = NextActionRequestConfig<Req>,
+  >(
     /** url is optional, if not provided, it will be empty string */
     url: U,
     initialConfig?: C,
@@ -183,7 +196,7 @@ export class NextAction<
     unknown,
     Prettify<Options & { req: C & Req; ctx: Ctx }>
   >;
-  post<C extends HttpApiConfig<Req> = HttpApiConfig<Req>>(
+  post<C extends NextActionRequestConfig<Req> = NextActionRequestConfig<Req>>(
     initialConfig?: C,
   ): Handler<
     unknown,
@@ -194,7 +207,7 @@ export class NextAction<
     never,
     [],
     unknown,
-    Prettify<Options & { req: Req; ctx: Ctx }>
+    Prettify<Options & { req: C & Req; ctx: Ctx }>
   >;
   post(...args: any[]) {
     const url = typeof args[0] === 'string' ? args[0] : '';
@@ -203,60 +216,64 @@ export class NextAction<
     return this.createNextActionHandler({
       initialConfig: {
         ...initialConfig,
+        withState: false,
         method: 'POST',
         url,
       },
     });
   }
 
-  private async createRequest(
-    initialConfig: HttpRequest & { withState?: boolean },
+  protected createRequest(
+    initialConfig: InitialConfig,
     bindArgsSchema: Transform[],
-    ...args: any[]
-  ): Promise<Req> {
-    const { method, url, withState, ...initial } = initialConfig;
+  ) {
+    return async (...args: any[]) => {
+      const { method, url, withState, ...initial } = initialConfig;
 
-    let inputData = args[0];
-    let state: any;
-    let parsedBindArgs: any[] = [];
+      let inputData = args[0];
+      let state: any;
+      let parsedBindArgs: any[] = [];
 
-    if (withState) {
-      state = args[0];
-      inputData = args[1];
-    } else if (Array.isArray(bindArgsSchema) && bindArgsSchema.length > 0) {
-      const bindArgs = args.slice(0, bindArgsSchema.length);
-      inputData = args[bindArgsSchema.length];
+      if (withState) {
+        state = args[0];
+        inputData = args[1];
+      } else if (Array.isArray(bindArgsSchema) && bindArgsSchema.length > 0) {
+        const bindArgs = args.slice(0, bindArgsSchema.length);
+        inputData = args[bindArgsSchema.length];
 
-      if (bindArgs.length !== bindArgsSchema.length) {
-        throw new ApiError({
-          code: ApiError.CODE_BAD_INPUT,
-          message: `Expected ${bindArgsSchema.length} bind arguments, but got ${bindArgs.length}`,
-        });
+        if (bindArgs.length !== bindArgsSchema.length) {
+          throw new ApiError({
+            code: ApiError.CODE_BAD_INPUT,
+            message: `Expected ${bindArgsSchema.length} bind arguments, but got ${bindArgs.length}`,
+          });
+        }
+
+        parsedBindArgs = await Promise.all(
+          bindArgsSchema.map(async (schema, i) => {
+            return await validate(schema, bindArgs[i]);
+          }),
+        );
       }
 
-      parsedBindArgs = await Promise.all(
-        bindArgsSchema.map(async (schema, i) => {
-          return await validate(schema, bindArgs[i]);
-        }),
-      );
-    }
+      const input =
+        inputData instanceof FormData
+          ? Object.fromEntries(inputData)
+          : inputData;
 
-    const input =
-      inputData instanceof FormData ? Object.fromEntries(inputData) : inputData;
-
-    return {
-      ...initial,
-      input,
-      state,
-      parsedInput: undefined,
-      parsedBindArgs,
-      method,
-      url,
-    } as Req;
+      return {
+        ...initial,
+        input,
+        parsedInput: undefined,
+        state,
+        parsedBindArgs,
+        method,
+        url,
+      } as Req;
+    };
   }
 
   private createNextActionHandler(handlerOpts: {
-    initialConfig: Partial<HttpApiConfig<Req>> & HttpRequest;
+    initialConfig: InitialConfig;
     schema?: Transform;
     transform?: Transform;
     bindArgsSchema?: any[];
@@ -264,8 +281,7 @@ export class NextAction<
     handleError?: HandleError<Ctx>;
   }) {
     const handler: any = this.createHandler({
-      createRequest: this.createRequest.bind(
-        null,
+      createRequest: this.createRequest(
         handlerOpts.initialConfig,
         handlerOpts.bindArgsSchema ?? [],
       ),
