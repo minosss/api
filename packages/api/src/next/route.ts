@@ -127,7 +127,11 @@ export class NextRoute<
   protected createRequest(initialConfig: { method: string; url: string }) {
     return async (
       req: NextRequest,
-      route: { params: Record<string, string | string[]> },
+      route: {
+        params:
+          | Record<string, string | string[]>
+          | Promise<Record<string, string | string[]>>;
+      },
     ) => {
       const { method: _method, url: _url, ...initial } = initialConfig;
       const url = req.url;
@@ -155,7 +159,11 @@ export class NextRoute<
         ...initial,
         input,
         parsedInput: undefined,
-        pathParams: route?.params,
+        pathParams:
+          // in nextjs 15, route.params is a promise
+          typeof route?.params?.then === 'function'
+            ? await route.params
+            : route?.params,
         rawRequest: req,
         method,
         url,
