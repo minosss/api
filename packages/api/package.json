@@ -15,6 +15,7 @@
     "nextjs"
   ],
   "license": "MIT",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,6 +43,7 @@
     "prepublishOnly": "npm run build",
     "release": "semantic-release",
     "test": "bun test --coverage",
+    "test:tsd": "tsd",
     "lint": "biome lint",
     "format": "biome format --write ."
   },
@@ -57,6 +59,7 @@
     "publint": "^0.2.10",
     "semantic-release": "^24.2.0",
     "size-limit": "^11.1.6",
+    "tsd": "^0.31.2",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"
   },
