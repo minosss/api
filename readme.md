@@ -30,10 +30,10 @@ npm install @yme/api
 Use `ApiClient` with `fetch` (Action first)
 
 ```ts
-import { ApiClient, replacePathParams } from "@yme/api/client";
+import { createClient, replacePathParams } from "@yme/api/client";
 import { logger } from "@yme/api/middleware";
 
-const api = new ApiClient({
+const api = createClient({
   action: async ({ req }) => {
     // make http request and return data
     const response = await fetch(req.url, {
@@ -80,8 +80,8 @@ const newUserId = await createUser(
 Use `NextAction` for Next.js server action (Action last)
 
 ```ts
-import { NextAction } from "@yme/api/next";
-const api = new NextAction({
+import { createAction } from "@yme/api/next";
+const api = createAction({
   middlewares: [],
   // throwing an error will make the server return status 500
   // we can handle it in the error handler. e.g. returns a fallback data with error message

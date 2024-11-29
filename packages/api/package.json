@@ -1,6 +1,6 @@
 {
   "name": "@yme/api",
-  "description": "Simply create some standalone functions",
+  "description": "Simply create some request functions",
   "version": "0.0.0-development",
   "type": "module",
   "sideEffects": false,
