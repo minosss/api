@@ -47,7 +47,7 @@ type Handler<
    */
   validator<OS extends Transform = Transform<I, unknown>>(
     schema: OS,
-  ): Handler<InferInput<OS>, O, M, U, S, T, B, E, C>;
+  ): Handler<InferInput<OS>, O, M, U, OS, T, B, E, C>;
 
   /**
    * @param transform - output transformation schema
@@ -92,7 +92,8 @@ type Handler<
         C & {
           req: {
             input: unknown;
-            parsedInput: I;
+            // parsed input, should be transformed after validation
+            parsedInput: InferOutput<S>;
             parsedBindArgs: InferInputArray<B>;
           };
         }

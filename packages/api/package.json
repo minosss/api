@@ -61,7 +61,7 @@
     "size-limit": "^11.1.6",
     "tsd": "^0.31.2",
     "typescript": "^5.5.4",
-    "zod": "^3.23.8"
+    "zod": "^3.24.2"
   },
   "peerDependencies": {
     "next": "^14.0.0 || >=15.0.0",
@@ -75,7 +75,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.12.3",
+  "packageManager": "pnpm@9.15.2",
   "engines": {
     "node": ">=18.0.0"
   },

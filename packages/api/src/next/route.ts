@@ -59,7 +59,8 @@ type Handler<
       opts: C & {
         req: {
           input: unknown;
-          parsedInput: I;
+          // parsed input, should be transformed after validation
+          parsedInput: InferOutput<S>;
           pathParams: PathParams<U>;
           rawRequest: NextRequest;
         };
