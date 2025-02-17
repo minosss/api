@@ -13,12 +13,12 @@ import type {
   SomeObject,
 } from '../types.js';
 
-type InitialConfig = {
+export type InitialConfig = {
   method: string;
   url: string;
 };
 
-type Handler<
+export type Handler<
   I,
   O,
   M extends string,
@@ -42,12 +42,14 @@ type Handler<
   T<OI = I, OO = O>(): Handler<OI, OO, M, U, S, T, C>;
 };
 
-type HandleBuilder<M extends string, C extends SomeObject> = <U extends string>(
+export type HandleBuilder<M extends string, C extends SomeObject> = <
+  U extends string,
+>(
   url: U,
   initialConfig?: C,
 ) => Handler<ExtractPathParams<U>, unknown, M, U, never, never, C>;
 
-type Action<Req, Ctx> = (
+export type Action<Req, Ctx> = (
   opts: Prettify<
     Options & {
       req: Req;
