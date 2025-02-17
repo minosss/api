@@ -1,18 +1,16 @@
 'use client';
 
-import type { HttpApiRequest } from '@yme/api';
-import { ApiClient } from '@yme/api/client';
+import { createClient } from '@yme/api/client';
 import { replacePathParams } from '@yme/api/client';
 import { logger } from '@yme/api/middleware';
 import { z } from 'zod';
 
-export const api = new ApiClient<
-  HttpApiRequest & {
+export const api = createClient<{
+  Req: {
     signal?: AbortSignal;
     headers?: Record<string, string>;
-  },
-  {}
->({
+  };
+}>({
   action: async ({ req }) => {
     const url = new URL(`/api/${req.url}`, window.location.origin);
     let body: any = null;

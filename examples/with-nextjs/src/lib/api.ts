@@ -1,4 +1,4 @@
-import { NextAction } from '@yme/api/next/action';
+import { NextAction } from '@yme/api/next';
 import { logger } from '@yme/api/middleware';
 import { ZodError } from 'zod';
 import { ApiError } from '@yme/api';
