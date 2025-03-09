@@ -8,6 +8,7 @@ import type {
   InferInput,
   InferOutput,
   Prettify,
+  SomeObject,
   Transform,
 } from '../types.js';
 import type { Middleware } from '../compose.js';
@@ -206,9 +207,10 @@ export class NextRoute<
     return handler;
   }
 
-  use<NC extends object>(middleware: Middleware<Ctx, NC>) {
-    return new NextRoute<Req, Ctx & NC>({
-      middlewares: [...this.middlewares, middleware],
+  use<NC extends SomeObject>(middleware: Middleware<Ctx, NC>) {
+    return new NextRoute<Req, Prettify<Ctx & NC>>({
+      handleError: this.handleError,
+      middlewares: [...this.middlewares, middleware] as Middleware<any>[],
     });
   }
 }

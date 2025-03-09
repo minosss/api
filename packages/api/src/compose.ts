@@ -1,4 +1,4 @@
-import type { AnyAsyncFn, ApiResponse, Options } from './types.js';
+import type { AnyAsyncFn, ApiResponse, Options, SomeObject } from './types.js';
 
 export type MiddlewareOptions<Ctx> = Options & {
   ctx: Ctx;
@@ -6,11 +6,14 @@ export type MiddlewareOptions<Ctx> = Options & {
   res: ApiResponse;
 };
 
-export type Middleware<Ctx, _NextCtx = any> = (
+export type Middleware<Ctx, NextCtx extends SomeObject = SomeObject> = (
   opts: MiddlewareOptions<Ctx> & {
-    next: <NC extends object>(opts?: { ctx?: NC }) => Promise<any>;
+    next: <NC extends SomeObject>(opts?: {
+      ctx?: NC;
+    }) => Promise<MiddlewareOptions<Ctx & NC>>;
   },
-) => Promise<any>;
+  // biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
+) => Promise<void | MiddlewareOptions<Ctx & NextCtx>>;
 
 export function compose(middlewares: Middleware<any>[]) {
   return function composed(

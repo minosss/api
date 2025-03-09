@@ -150,10 +150,11 @@ export class ApiClient<
     return handler;
   }
 
-  use<NC extends object>(middleware: Middleware<Ctx, NC>) {
-    return new ApiClient<Req, Ctx & NC>({
+  use<NC extends SomeObject>(middleware: Middleware<Ctx, NC>) {
+    return new ApiClient<Req, Prettify<Ctx & NC>>({
       action: this.#action,
-      middlewares: [...this.middlewares, middleware],
+      handleError: this.handleError,
+      middlewares: [...this.middlewares, middleware] as Middleware<any>[],
     });
   }
 }

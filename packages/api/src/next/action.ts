@@ -13,6 +13,7 @@ import type {
   Prettify,
   Options,
   ApiRequest,
+  SomeObject,
 } from '../types.js';
 import { validate } from '../validate.js';
 import { noop } from './noop.js';
@@ -323,9 +324,10 @@ export class NextAction<
     return handler;
   }
 
-  use<NC extends object>(middleware: Middleware<Ctx, NC>) {
-    return new NextAction<Req, Ctx & NC>({
-      middlewares: [...this.middlewares, middleware],
+  use<NC extends SomeObject>(middleware: Middleware<Ctx, NC>) {
+    return new NextAction<Req, Prettify<Ctx & NC>>({
+      handleError: this.handleError,
+      middlewares: [...this.middlewares, middleware] as Middleware<any>[],
     });
   }
 }
